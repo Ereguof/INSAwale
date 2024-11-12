@@ -95,8 +95,6 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          if (parties[i].accepted == 0 && strcmp(parties[i].client2->name,client->name) == 0)
          {
             write_client(parties[i].client1->sock, "Défi refusé\n");
-            remove_partie(parties, i, nbParties);
-            printf("taille du tableu de parties : %d\n", *nbParties);
             return 1;
          }
       }
