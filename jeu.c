@@ -24,17 +24,34 @@ typedef struct
     int nbGraines;
 } Client;
 
-void afficher_plateau(int plateau[], Client *client1, Client *client2)
+void afficher_plateau(int plateau[], Client *client1, Client *client2, int num_joueur_appelant)
 {
-    printf("Plateau : \n");
-    for (int i = TAILLE_PLATEAU - 1; i > TAILLE_PLATEAU / 2 - 1; i--)
+    printf("Plateau : pour j%d \n", num_joueur_appelant);
+
+    if (num_joueur_appelant == 1)
     {
-        printf("%d ", plateau[i]);
+        for (int i = TAILLE_PLATEAU - 1; i > TAILLE_PLATEAU / 2 - 1; i--)
+        {
+            printf("%0*d ", 2, plateau[i]);
+        }
+        printf("\n");
+        for (int i = 0; i < TAILLE_PLATEAU / 2; i++)
+        {
+            printf("%0*d ", 2, plateau[i]);
+        }
     }
-    printf("\n");
-    for (int i = 0; i < TAILLE_PLATEAU / 2; i++)
+    else
     {
-        printf("%d ", plateau[i]);
+        for (int i = (TAILLE_PLATEAU / 2) - 1; i >= 0; i--)
+        {
+            printf("%0*d ", 2, plateau[i]);
+        }
+        printf("\n");
+        for (int i = TAILLE_PLATEAU / 2; i < TAILLE_PLATEAU; i++)
+        {
+            printf("%0*d ", 2, plateau[i]);
+        }
+        printf("\n");
     }
     printf("\n");
     printf("joueur 1 : %d\n", client1->nbGraines);
@@ -203,6 +220,7 @@ int main(int argc, char **argv)
     while (1)
     {
         int coup;
+        afficher_plateau(plateau, &client1, &client2, client_actuel);
         printf("Joueur %d, choisissez une case\n", client_actuel);
         scanf("%d", &coup);
         if (client_actuel == 1)
@@ -210,7 +228,7 @@ int main(int argc, char **argv)
             if (coup_valide(plateau, &client1, coup))
             {
                 coup_suivant(plateau, &client1, coup);
-                afficher_plateau(plateau, &client1, &client2);
+                afficher_plateau(plateau, &client1, &client2, 1);
             }
             else
             {
@@ -222,7 +240,7 @@ int main(int argc, char **argv)
             if (coup_valide(plateau, &client2, coup))
             {
                 coup_suivant(plateau, &client2, coup);
-                afficher_plateau(plateau, &client1, &client2);
+                afficher_plateau(plateau, &client1, &client2, 2);
             }
             else
             {
