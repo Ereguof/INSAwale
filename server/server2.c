@@ -79,7 +79,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
    {
       for (int i = 0; i < *nbParties; i++)
       {
-         if (parties[i].accepted == 0 && parties[i].client2->name == client->name)
+         if (parties[i].accepted == 0 && strcmp(parties[i].client2->name,client->name) == 0)
          {
             parties[i].accepted = 1;
             write_client(parties[i].client1->sock, "Défi accepté\n");
@@ -92,7 +92,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
    {
       for (int i = 0; i < *nbParties; i++)
       {
-         if (parties[i].accepted == 0 && parties[i].client2->name == client->name)
+         if (parties[i].accepted == 0 && strcmp(parties[i].client2->name,client->name) == 0)
          {
             write_client(parties[i].client1->sock, "Défi refusé\n");
             remove_partie(parties, i, nbParties);
