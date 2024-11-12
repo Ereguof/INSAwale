@@ -95,7 +95,8 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          if (parties[i].accepted == 0 && parties[i].client2->name == client->name)
          {
             write_client(parties[i].client1->sock, "Défi refusé\n");
-            
+            remove_partie(parties, i, nbParties);
+            printf("taille du tableu de parties : %d\n", *nbParties);
             return 1;
          }
       }
@@ -247,6 +248,14 @@ static void remove_client(Client *clients, int to_remove, int *actual)
    memmove(clients + to_remove, clients + to_remove + 1, (*actual - to_remove - 1) * sizeof(Client));
    /* number client - 1 */
    (*actual)--;
+}
+
+static void remove_partie(Partie *parties, int to_remove, int *nbParties)
+{
+   /* we remove the client in the array */
+   memmove(parties + to_remove, parties + to_remove + 1, (*nbParties - to_remove - 1) * sizeof(Partie));
+   /* number client - 1 */
+   (*nbParties)--;
 }
 
 static void send_message_to_all_clients(Client *clients, Client sender, int actual, const char *buffer, char from_server)
