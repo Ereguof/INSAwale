@@ -248,6 +248,14 @@ static void remove_client(Client *clients, int to_remove, int *actual)
    (*actual)--;
 }
 
+static void remove_partie(Partie *parties, int to_remove, int *nbParties)
+{
+   /* we remove the client in the array */
+   memmove(parties + to_remove, parties + to_remove + 1, (*nbParties - to_remove - 1) * sizeof(Partie));
+   /* number client - 1 */
+   (*nbParties)--;
+}
+
 static void send_message_to_all_clients(Client *clients, Client sender, int actual, const char *buffer, char from_server)
 {
    int i = 0;
