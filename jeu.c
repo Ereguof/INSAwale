@@ -125,8 +125,8 @@ int coup_suivant(int plateau[], Client *client, int case_joueur)
         {
             plateau[i % TAILLE_PLATEAU]++;
             nb_graines--;
-            i++;
         }
+        i++;
     }
     i--;
 
