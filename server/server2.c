@@ -26,6 +26,48 @@ static void end(void)
 #endif
 }
 
+int afficherPartie(Partie *partie)
+{
+   printf("Client 1 : %s\n", partie->client1->name);
+   printf("Client 2 : %s\n", partie->client2->name);
+   printf("Plateau : ");
+   for (int i = 0; i < TAILLE_PLATEAU; i++)
+   {
+      printf("%d ", partie->plateau[i]);
+   }
+   printf("\n");
+   printf("Accepted : %d\n", partie->accepted);
+   return 0;
+}
+
+int afficherParties(Partie *parties, int nbParties)
+{
+   for (int i = 0; i < nbParties; i++)
+   {
+      printf("Partie %d\n", i+1);
+      afficherPartie(&parties[i]);
+   }
+}
+
+int afficherClients(Client *clients, int actual)
+{
+   printf("Liste des clients connectés :\n");
+   for (int i = 0; i < actual; i++)
+   {
+      printf("Client %d : %s\n", i, clients[i].name);
+   }
+   return 0;
+}
+
+int initPlateau(int plateau[TAILLE_PLATEAU])
+{
+   for (int i = 0; i < TAILLE_PLATEAU; i++)
+   {
+      plateau[i] = NB_GRAINES/TAILLE_PLATEAU;
+   }
+   return 0;
+}
+
 static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int actual, int *nbParties, Client *client, char *buffer)
 {
    char d[] = " ";
@@ -60,12 +102,20 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
             if (strcmp(p, clients[i].name) == 0)
             {
                Partie partie;
-               partie.client1 = client;
+               for (int j = 0; j < actual; j++)
+               {
+                  if (strcmp(client->name, clients[j].name) == 0)
+                  {
+                     partie.client1 = &clients[j];
+                     break;
+                  }
+               }
                partie.client2 = &clients[i];
                partie.accepted = 0;
                parties[*nbParties] = partie;
                (*nbParties)++;
-               write_client(clients[i].sock, strcat(client->name, " vous a défié : Acceptez-vous ? (Type 'Accept' or 'Deny')\n"));
+               write_client(clients[i].sock, client->name);
+               write_client(clients[i].sock, " vous a défié : Acceptez-vous ? (Type 'Accept' or 'Deny')\n");
                return 1;
             }
          }
@@ -82,6 +132,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          if (parties[i].accepted == 0 && strcmp(parties[i].client2->name,client->name) == 0)
          {
             parties[i].accepted = 1;
+            initPlateau(parties[i].plateau);
             write_client(parties[i].client1->sock, "Défi accepté\n");
             return 1;
          }
@@ -99,6 +150,8 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          }
       }
    }
+
+   // rajouter les commandes permettant de jouer
    
    else 
    {
@@ -127,13 +180,13 @@ static void app(void)
    {
       int i = 0;
       FD_ZERO(&rdfs);
-
+      
       /* add STDIN_FILENO */
       FD_SET(STDIN_FILENO, &rdfs);
-
+      
       /* add the connection socket */
       FD_SET(sock, &rdfs);
-
+   
       /* add socket of each client */
       for (i = 0; i < actual; i++)
       {
@@ -212,10 +265,12 @@ static void app(void)
                if (c == 0)
                {
                   closesocket(clients[i].sock);
-                  remove_client(clients, i, &actual);
                   strncpy(buffer, client.name, BUF_SIZE - 1);
                   strncat(buffer, " disconnected !", BUF_SIZE - strlen(buffer) - 1);
                   send_message_to_all_clients(clients, client, actual, buffer, 1);
+                  remove_client(clients, i, &actual, &nbParties, parties);
+                  afficherClients(clients, actual);
+                  afficherParties(parties, nbParties);
                }
                else
                {
@@ -240,10 +295,37 @@ static void clear_clients(Client *clients, int actual)
    }
 }
 
-static void remove_client(Client *clients, int to_remove, int *actual)
+static void remove_client(Client *clients, int to_remove, int *actual, int *nbParties, Partie *parties)
 {
+   for (int i = 0; i < *nbParties; i++)
+   {
+      if (strcmp(parties[i].client2->name, clients[to_remove].name) == 0)
+      {
+         write_client(parties[i].client1->sock, "L'adversaire s'est déconnecté\n");
+         remove_partie(parties, i, nbParties);
+         i--;
+      } else if (strcmp(parties[i].client1->name, clients[to_remove].name) == 0)
+      {
+         write_client(parties[i].client2->sock, "L'adversaire s'est déconnecté\n");
+         remove_partie(parties, i, nbParties);
+         i--;
+      } else
+      {
+         // rajouter la modification du client dans toutes les autres parties si > to_remove
+         if (parties[i].client1 > &clients[to_remove])
+         {
+            parties[i].client1--;
+         }
+         if (parties[i].client2 > &clients[to_remove])
+         {
+            parties[i].client2--;
+         }
+      }
+   }
+   afficherClients(clients, *actual);
    /* we remove the client in the array */
    memmove(clients + to_remove, clients + to_remove + 1, (*actual - to_remove - 1) * sizeof(Client));
+   afficherClients(clients, *actual);
    /* number client - 1 */
    (*actual)--;
 }
@@ -274,6 +356,7 @@ static void send_message_to_all_clients(Client *clients, Client sender, int actu
          strncat(message, buffer, sizeof message - strlen(message) - 1);
          write_client(clients[i].sock, message);
       }
+      message[0] = 0;
    }
 }
 
@@ -349,20 +432,3 @@ int main(int argc, char **argv)
 
    return EXIT_SUCCESS;
 }
-
-// {
-//    char message[BUF_SIZE] = "";
-//    for (int i = 0; i < TAILLE_PLATEAU; i++)
-//    {
-//       char case_plateau[TAILLE_PLATEAU];
-//       sprintf(case_plateau, "%d ", plateau[i]);
-//       strncat(message, case_plateau, sizeof message - strlen(message) - 1);
-//    }
-//    if(from_server == 0)
-//    {
-//       strncpy(message, sender.name, BUF_SIZE - 1);
-//       strncat(message, " : ", sizeof message - strlen(message) - 1);
-//    }
-//    strncat(message, buffer, sizeof message - strlen(message) - 1);
-//    write_client(client1.sock, message);
-// }
