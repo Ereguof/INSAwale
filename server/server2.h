@@ -30,6 +30,7 @@ typedef struct in_addr IN_ADDR;
 #define CRLF "\r\n"
 #define PORT 1977
 #define MAX_CLIENTS 100
+#define MAX_PARTIES 2
 #define BUF_SIZE 1024
 
 #define TAILLE_PLATEAU 12

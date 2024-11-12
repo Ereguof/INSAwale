@@ -26,10 +26,11 @@ static void end(void)
 #endif
 }
 
-static int command(Client clients[MAX_CLIENTS], int actual, Client *client, char *buffer)
+static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int actual, int *nbParties, Client *client, char *buffer)
 {
    char d[] = " ";
    char *p = strtok(buffer, d); // permet de récupérer le premier mot de la commande
+
    if (strcmp(p, "Liste") == 0)
    {
       write_client(client->sock, "Liste des participants connectés :\n");
@@ -39,7 +40,9 @@ static int command(Client clients[MAX_CLIENTS], int actual, Client *client, char
          write_client(client->sock, "\n");
       }
       return 1;
-   } else if (strcmp(p, "Challenge") == 0)
+   } 
+   
+   else if (strcmp(p, "Challenge") == 0)
    {
       p = strtok(NULL, d);
       if (p == NULL)
@@ -56,6 +59,12 @@ static int command(Client clients[MAX_CLIENTS], int actual, Client *client, char
          {
             if (strcmp(p, clients[i].name) == 0)
             {
+               Partie partie;
+               partie.client1 = client;
+               partie.client2 = &clients[i];
+               partie.accepted = 0;
+               parties[*nbParties] = partie;
+               (*nbParties)++;
                write_client(clients[i].sock, strcat(client->name, " vous a défié : Acceptez-vous ? (Type 'Accept' or 'Deny')\n"));
                return 1;
             }
@@ -64,7 +73,35 @@ static int command(Client clients[MAX_CLIENTS], int actual, Client *client, char
          return 1;
       }
       return 1;
-   } else 
+   } 
+   
+   else if (strcmp(p, "Accept") == 0)
+   {
+      for (int i = 0; i < *nbParties; i++)
+      {
+         if (parties[i].accepted == 0 && parties[i].client2->name == client->name)
+         {
+            parties[i].accepted = 1;
+            write_client(parties[i].client1->sock, "Défi accepté\n");
+            return 1;
+         }
+      }
+   }
+
+   else if (strcmp(p, "Deny") == 0)
+   {
+      for (int i = 0; i < *nbParties; i++)
+      {
+         if (parties[i].accepted == 0 && parties[i].client2->name == client->name)
+         {
+            write_client(parties[i].client1->sock, "Défi refusé\n");
+            
+            return 1;
+         }
+      }
+   }
+   
+   else 
    {
       printf("Client %s : %s\n", client->name, buffer);
       send_message_to_all_clients(clients, *client, actual, buffer, 0);
@@ -82,6 +119,8 @@ static void app(void)
    int max = sock;
    /* an array for all clients */
    Client clients[MAX_CLIENTS];
+   Partie parties[MAX_PARTIES];
+   int nbParties = 0;
 
    fd_set rdfs;
 
@@ -133,6 +172,22 @@ static void app(void)
             continue;
          }
 
+         int invalide = 0;
+         for (int i = 0; i < actual; i++)
+         {
+            if (strcmp(clients[i].name, buffer) == 0)
+            {
+               write_client(csock, "Ce nom est déjà utilisé\n");
+               closesocket(csock);
+               invalide++;
+               break;
+            }
+         }
+         if (invalide)
+         {
+            continue;
+         }
+         
          /* what is the new maximum fd ? */
          max = csock > max ? csock : max;
 
@@ -165,7 +220,7 @@ static void app(void)
                }
                else
                {
-                  command(clients, actual, &client, buffer);
+                  command(parties, clients, actual, &nbParties, &client, buffer);
                }
                break;
             }
