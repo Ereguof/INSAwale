@@ -95,7 +95,6 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          if (parties[i].accepted == 0 && parties[i].client2->name == client->name)
          {
             write_client(parties[i].client1->sock, "Défi refusé\n");
-            
             return 1;
          }
       }
