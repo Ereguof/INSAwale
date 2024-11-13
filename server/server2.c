@@ -73,7 +73,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
    char d[] = " ";
    char *p = strtok(buffer, d); // permet de récupérer le premier mot de la commande
 
-   if (strcmp(p, "Liste") == 0)
+   if (strcmp(p, "/list") == 0)
    {
       write_client(client->sock, "Liste des participants connectés :\n");
       for (int i = 0; i < actual; i++)
@@ -84,7 +84,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       return 1;
    } 
    
-   else if (strcmp(p, "Challenge") == 0)
+   else if (strcmp(p, "/challenge") == 0)
    {
       p = strtok(NULL, d);
       if (p == NULL)
@@ -115,7 +115,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
                parties[*nbParties] = partie;
                (*nbParties)++;
                write_client(clients[i].sock, client->name);
-               write_client(clients[i].sock, " vous a défié : Acceptez-vous ? (Type 'Accept' or 'Deny')\n");
+               write_client(clients[i].sock, " vous a défié : Acceptez-vous ? (Type '/accept' or '/deny')\n");
                return 1;
             }
          }
@@ -125,7 +125,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       return 1;
    } 
    
-   else if (strcmp(p, "Accept") == 0)
+   else if (strcmp(p, "/accept") == 0)
    {
       for (int i = 0; i < *nbParties; i++)
       {
@@ -139,7 +139,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       }
    }
 
-   else if (strcmp(p, "Deny") == 0)
+   else if (strcmp(p, "/deny") == 0)
    {
       for (int i = 0; i < *nbParties; i++)
       {
