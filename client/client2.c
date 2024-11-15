@@ -25,6 +25,33 @@ static void end(void)
 #endif
 }
 
+
+int deserializeIntArray(char* buffer, int* array, int size)
+{
+   char d[] = ",";
+   char *p = strtok(buffer, d);
+   for (int i = 0; i < size; i++)
+   {
+      array[i] = atoi(p);
+      p = strtok(NULL, d);
+   }
+   return 0;
+}
+
+int * recevoirPlateau(SOCKET sock, int * plateau)
+{
+   char buffer[BUF_SIZE];
+   int n = 0;
+   if((n = recv(sock, buffer, BUF_SIZE - 1, 0)) < 0)
+   {
+      perror("recv()");
+      exit(errno);
+   }
+   buffer[n] = 0;
+   deserializeIntArray(buffer, plateau, TAILLE_PLATEAU);
+   return plateau;
+}
+
 static void app(const char *address, const char *name)
 {
    SOCKET sock = init_connection(address);
@@ -79,7 +106,21 @@ static void app(const char *address, const char *name)
             printf("Server disconnected !\n");
             break;
          }
-         puts(buffer);
+         if (buffer[0] == 'P')
+         {
+            int plateau[TAILLE_PLATEAU];
+            recevoirPlateau(sock, plateau);
+            printf("Plateau reçu : ");
+            for (int i = 0; i < TAILLE_PLATEAU; i++)
+            {
+               printf("%d ", plateau[i]);
+            }
+            printf("\n");
+         }
+         else
+         {
+            puts(buffer);
+         }
       }
    }
 

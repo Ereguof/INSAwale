@@ -26,6 +26,19 @@ static void end(void)
 #endif
 }
 
+char * serializeIntArray(char* buffer, int* array, int size)
+{
+   for (int i = 0; i < size; i++)
+   {
+      buffer += sprintf(buffer, "%d", array[i]);
+      if (i < size - 1)
+      {
+         buffer += sprintf(buffer, ",");
+      }
+   }
+   return buffer;
+}
+
 int afficherPartie(Partie *partie)
 {
    printf("Client 1 : %s\n", partie->client1->name);
@@ -68,6 +81,15 @@ int initPlateau(int plateau[TAILLE_PLATEAU])
    return 0;
 }
 
+int envoyerPlateau(SOCKET sock, int plateau[TAILLE_PLATEAU])
+{
+   char buffer[BUF_SIZE];
+   buffer[0] = 'P';
+   serializeIntArray(buffer, plateau, TAILLE_PLATEAU);
+   write_client(sock, buffer);
+   return 0;
+}
+
 static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int actual, int *nbParties, Client *client, char *buffer)
 {
    char d[] = " ";
@@ -97,7 +119,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          return 1;
       } else
       {
-         for (int i = 0; i < actual; i++)
+         for (int i = 0; i < actual; i++) // rajouter fonctionnalité empechant de defier un joueur déjà en partie
          {
             if (strcmp(p, clients[i].name) == 0)
             {
@@ -134,6 +156,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
             parties[i].accepted = 1;
             initPlateau(parties[i].plateau);
             write_client(parties[i].client1->sock, "Défi accepté\n");
+            envoyerPlateau(parties[i].client1->sock, parties[i].plateau);
             return 1;
          }
       }
