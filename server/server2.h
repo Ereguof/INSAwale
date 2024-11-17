@@ -48,13 +48,13 @@ typedef struct Client Client;
 
 struct Partie
 {
-    Client *client1;
-    Client *client2;
-    int plateau[TAILLE_PLATEAU];
     int accepted;
     int tour;
-    Client spectateurs[MAX_CLIENTS];
     int nbSpectateurs;
+    int plateau[TAILLE_PLATEAU];
+    Client *client1;
+    Client *client2;
+    Client spectateurs[MAX_CLIENTS];
 };
 
 
