@@ -47,8 +47,6 @@ typedef struct
     int accepted;
 } Partie;
 
-
-
 static void init(void);
 static void end(void);
 static void app(void);
