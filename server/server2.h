@@ -1,6 +1,3 @@
-#ifndef SERVER_H
-#define SERVER_H
-
 #ifdef WIN32
 
 #include <winsock2.h>
@@ -27,25 +24,40 @@ typedef struct in_addr IN_ADDR;
 
 #endif
 
+#ifndef SERVER_H
+#define SERVER_H
+
+typedef struct sockaddr_in SOCKADDR_IN;
+typedef struct sockaddr SOCKADDR;
+typedef struct in_addr IN_ADDR;
+
 #define CRLF "\r\n"
 #define PORT 1977
 #define MAX_CLIENTS 100
-#define MAX_PARTIES 2
+#define MAX_PARTIES 50
 #define BUF_SIZE 1024
 
 #define TAILLE_PLATEAU 12
 #define NB_GRAINES 48
 #define NB_GRAINES_WIN 25
 
+// Forward declaration of Client struct
+typedef struct Client Client;
+
 #include "client2.h"
 
-typedef struct
+struct Partie
 {
     Client *client1;
     Client *client2;
     int plateau[TAILLE_PLATEAU];
     int accepted;
-} Partie;
+    int tour;
+    Client spectateurs[MAX_CLIENTS];
+    int nbSpectateurs;
+};
+
+
 
 static void init(void);
 static void end(void);

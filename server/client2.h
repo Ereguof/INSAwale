@@ -1,14 +1,17 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
+typedef struct Partie Partie;
+
 #include "server2.h"
 
-typedef struct
+struct Client
 {
    SOCKET sock;
    char name[BUF_SIZE];
    int numJoueur;
    int nbGraines;
-}Client;
+   Partie * partie;
+};
 
 #endif /* guard */

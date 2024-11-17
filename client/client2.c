@@ -117,6 +117,10 @@ static void app(const char *address, const char *name)
             }
             printf("\n");
          }
+         else if (buffer[0] == 'S')
+         {
+            printf("Score : %s\n", buffer + 1);
+         }
          else
          {
             puts(buffer);

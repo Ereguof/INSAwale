@@ -55,10 +55,21 @@ int afficherPartie(Partie *partie)
 
 int afficherParties(Partie *parties, int nbParties)
 {
+   printf("Liste des parties en cours :\n");
+   printf("Nombre de parties : %d\n", nbParties);
    for (int i = 0; i < nbParties; i++)
    {
-      printf("Partie %d\n", i + 1);
-      afficherPartie(&parties[i]);
+      printf("Partie :  %d\n", parties[i].accepted);
+      if (parties[i].accepted == 1)
+      {
+         printf("Partie %d\n", i + 1);
+         afficherPartie(&parties[i]);
+      } 
+      else 
+      {
+         printf("Partie non acceptée\n");
+         afficherPartie(&parties[i]);
+      }
    }
 }
 
@@ -72,14 +83,18 @@ int afficherClients(Client *clients, int actual)
    return 0;
 }
 
-int enJeu(Partie *parties, int nbParties, Client *client)
+int enJeu(Client *client)
 {
-   for (int i = 0; i < nbParties; i++)
+   // for (int i = 0; i < nbParties; i++)
+   // {
+   //    if (strcmp(parties[i].client1->name, client->name) == 0 || strcmp(parties[i].client2->name, client->name) == 0)
+   //    {
+   //       return 1;
+   //    }
+   // }
+   if (client->partie != NULL)
    {
-      if (strcmp(parties[i].client1->name, client->name) == 0 || strcmp(parties[i].client2->name, client->name) == 0)
-      {
-         return 1;
-      }
+      return 1;
    }
    return 0;
 }
@@ -99,6 +114,22 @@ int envoyerPlateau(SOCKET sock, int plateau[TAILLE_PLATEAU])
    buffer[0] = 'P';
    serializeIntArray(buffer, plateau, TAILLE_PLATEAU);
    write_client(sock, buffer);
+   write_client(sock, "\n");
+   return 0;
+}
+
+int envoyerScore(SOCKET sock, Partie *partie)
+{
+   char buffer[BUF_SIZE];
+   buffer[0] = 'S';
+   strcat(buffer, partie->client1->name);
+   strcat(buffer, " : ");
+   sprintf(buffer, "%d", partie->client1->nbGraines);
+   strcat(buffer, " ");
+   strcat(buffer, partie->client2->name);
+   strcat(buffer, " : ");
+   sprintf(buffer, "%d", partie->client2->nbGraines);
+   write_client(sock, buffer);
    return 0;
 }
 
@@ -112,8 +143,10 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       write_client(client->sock, "Liste des participants connectés :\n");
       for (int i = 0; i < actual; i++)
       {
-         write_client(client->sock, clients[i].name);
-         write_client(client->sock, "\n");
+         buffer[0] = 0;
+         strncat(buffer, clients[i].name, BUF_SIZE - 1);
+         strncat(buffer, "\n", BUF_SIZE - strlen(buffer) - 1);
+         write_client(client->sock, buffer);
       }
       return 1;
    }
@@ -131,7 +164,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          write_client(client->sock, "Vous ne pouvez pas vous défier vous-même\n");
          return 1;
       }
-      else if (enJeu(parties, *nbParties, client))
+      else if (enJeu(client))
       {
          write_client(client->sock, "Vous êtes déjà en partie\n");
          return 1;
@@ -140,9 +173,11 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       {
          for (int i = 0; i < actual; i++)
          {
-            if (strcmp(p, clients[i].name) == 0 && enJeu(parties, *nbParties, &clients[i]) == 0)
+            if (strcmp(p, clients[i].name) == 0 && enJeu(&clients[i]) == 0)
             {
                Partie partie;
+               client->partie = &partie;
+               clients[i].partie = &partie;
                for (int j = 0; j < actual; j++)
                {
                   if (strcmp(client->name, clients[j].name) == 0)
@@ -152,15 +187,18 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
                   }
                }
                partie.client2 = &clients[i];
+               printf("client1 : %s\n", client->partie->client1->name);
+               printf("client2 : %s\n", client->partie->client2->name);
                partie.accepted = 0;
                parties[*nbParties] = partie;
                (*nbParties)++;
+               printf("fin de challenge\n");
                write_client(clients[i].sock, client->name);
                write_client(clients[i].sock, " vous a défié : Acceptez-vous ? (Type '/accept' or '/deny')\n");
                write_client(client->sock, "Défi envoyé\n");
                return 1;
             }
-            else if (strcmp(p, clients[i].name) == 0 && enJeu(parties, *nbParties, &clients[i]) == 1)
+            else if (strcmp(p, clients[i].name) == 0 && enJeu(&clients[i]))
             {
                write_client(client->sock, "Le joueur est déjà en partie\n");
                return 1;
@@ -174,29 +212,44 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
 
    else if (strcmp(p, "/accept") == 0)
    {
-      for (int i = 0; i < *nbParties; i++)
+      if (client->partie != NULL && client->partie->accepted == 0)
       {
-         if (parties[i].accepted == 0 && strcmp(parties[i].client2->name, client->name) == 0)
+         client->partie->accepted = 1;
+         client->partie->tour = random() % 2 + 1;
+         initPlateau(client->partie->plateau);
+         write_client(client->sock, "Défi accepté\n");
+         write_client(client->partie->client1->sock, "Défi accepté\n");
+         if (client->partie->tour == 1)
          {
-            parties[i].accepted = 1;
-            initPlateau(parties[i].plateau);
-            write_client(parties[i].client1->sock, "Défi accepté\n");
-            write_client(parties[i].client2->sock, "Défi accepté\n");
-            envoyerPlateau(parties[i].client1->sock, parties[i].plateau);
-            return 1;
+            write_client(client->partie->client1->sock, "Vous commencez\n");
+            write_client(client->sock, "Votre adversaire commence\n");
          }
+         else
+         {
+            write_client(client->sock, "Vous commencez\n");
+            write_client(client->partie->client1->sock, "Votre adversaire commence\n");
+         }
+         envoyerPlateau(client->partie->client1->sock, client->partie->plateau);
+         envoyerScore(client->partie->client1->sock, client->partie);
+         envoyerPlateau(client->sock, client->partie->plateau);
+         envoyerScore(client->sock, client->partie);
+         return 1;
+      } else {
+         write_client(client->sock, "Vous n'avez pas de défi en attente\n");
+         return 1;
       }
    }
 
    else if (strcmp(p, "/deny") == 0)
    {
-      for (int i = 0; i < *nbParties; i++)
+      if (client->partie != NULL && client->partie->accepted == 0)
       {
-         if (parties[i].accepted == 0 && strcmp(parties[i].client2->name, client->name) == 0)
-         {
-            write_client(parties[i].client1->sock, "Défi refusé\n");
-            return 1;
-         }
+         write_client(client->partie->client1->sock, "Défi refusé\n");
+         client->partie = NULL;
+      }
+      else
+      {
+         write_client(client->sock, "Vous n'avez pas de défi en attente\n");
       }
    }
 
@@ -213,7 +266,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          write_client(client->sock, "Vous ne pouvez pas vous observer vous-même\n");
          return 1;
       }
-      else if (enJeu(parties, *nbParties, client))
+      else if (enJeu(client))
       {
          write_client(client->sock, "Vous êtes déjà en partie\n");
          return 1;
@@ -222,15 +275,17 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       {
          for (int i = 0; i < actual; i++)
          {
-            if (strcmp(p, clients[i].name) == 0 && enJeu(parties, *nbParties, &clients[i]) == 1)
+            if (strcmp(p, clients[i].name) == 0 && enJeu(&clients[i]))
             {
                write_client(client->sock, "Vous observez la partie de ");
                write_client(client->sock, clients[i].name);
                write_client(client->sock, "\n");
-               envoyerPlateau(client->sock, parties[i].plateau);
+               envoyerPlateau(client->sock, clients[i].partie->plateau);
+               envoyerScore(client->sock, clients[i].partie);
+               clients[i].partie->spectateurs[clients[i].partie->nbSpectateurs] = *client;
                return 1;
             }
-            else if (strcmp(p, clients[i].name) == 0 && enJeu(parties, *nbParties, &clients[i]) == 0)
+            else if (strcmp(p, clients[i].name) == 0 && enJeu(&clients[i]) == 0)
             {
                write_client(client->sock, "Le joueur n'est pas en partie\n");
                return 1;
@@ -265,7 +320,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       return 1;
    }
 
-   else if (strcmp(p, "/w") == 0)
+   else if (strcmp(p, "/mp") == 0)
    {
       p = strtok(NULL, d);
       if (p == NULL)
@@ -276,7 +331,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       char message[BUF_SIZE];
       message[0] = 0;
       strncat(message, client->name, BUF_SIZE - 1);
-      strncat(message, " : ", BUF_SIZE - strlen(message) - 1);
+      strncat(message, " (mp) : ", BUF_SIZE - strlen(message) - 1);
       char nom[BUF_SIZE];
       strcpy(nom, p);
       p = strtok(NULL, d);
@@ -321,7 +376,7 @@ static void app(void)
    /* an array for all clients */
    Client clients[MAX_CLIENTS];
    Partie parties[MAX_PARTIES];
-   static int nbParties = 0;
+   int nbParties = 0;
 
    fd_set rdfs;
 
@@ -446,30 +501,41 @@ static void clear_clients(Client *clients, int actual)
 
 static void remove_client(Client *clients, int to_remove, int *actual, int *nbParties, Partie *parties)
 {
-   for (int i = 0; i < *nbParties; i++)
+   if (clients[to_remove].partie != NULL)
    {
-      if (strcmp(parties[i].client2->name, clients[to_remove].name) == 0)
+      if (clients[to_remove].partie->client1 == &clients[to_remove])
       {
-         write_client(parties[i].client1->sock, "L'adversaire s'est déconnecté\n");
-         remove_partie(parties, i, nbParties);
-         i--;
-      }
-      else if (strcmp(parties[i].client1->name, clients[to_remove].name) == 0)
-      {
-         write_client(parties[i].client2->sock, "L'adversaire s'est déconnecté\n");
-         remove_partie(parties, i, nbParties);
-         i--;
+         write_client(clients[to_remove].partie->client2->sock, "L'adversaire s'est déconnecté\n");
       }
       else
       {
-         // rajouter la modification du client dans toutes les autres parties si > to_remove
-         if (parties[i].client1 > &clients[to_remove])
+         write_client(clients[to_remove].partie->client1->sock, "L'adversaire s'est déconnecté\n");
+      }
+      for (int i = 0; i < *nbParties; i++)
+      {
+         if (parties[i].client1 == &clients[to_remove] || parties[i].client2 == &clients[to_remove])
          {
-            parties[i].client1--;
-         }
-         if (parties[i].client2 > &clients[to_remove])
+            remove_partie(parties, i, nbParties);
+            i--;
+         } 
+         else 
          {
-            parties[i].client2--;
+            if (parties[i].client1 > &clients[to_remove])
+            {
+               parties[i].client1--;
+            }
+            if (parties[i].client2 > &clients[to_remove])
+            {
+               parties[i].client2--;
+            }
+            for (int j = 0; j < parties[i].nbSpectateurs; j++)
+            {
+               if (strcmp(parties[i].spectateurs[j].name, clients[to_remove].name) == 0)
+               {
+                  remove_client(parties[i].spectateurs, j, &parties[i].nbSpectateurs, 0, 0);
+                  j--;
+               }
+            }
          }
       }
    }
