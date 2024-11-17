@@ -64,8 +64,8 @@ int afficherParties(Partie *parties, int nbParties)
       {
          printf("Partie %d\n", i + 1);
          afficherPartie(&parties[i]);
-      } 
-      else 
+      }
+      else
       {
          printf("Partie non acceptée\n");
          afficherPartie(&parties[i]);
@@ -121,6 +121,7 @@ int envoyerPlateau(SOCKET sock, int plateau[TAILLE_PLATEAU])
 int envoyerScore(SOCKET sock, Partie *partie)
 {
    char buffer[BUF_SIZE];
+   buffer[0] = 0;
    buffer[0] = 'S';
    strcat(buffer, partie->client1->name);
    strcat(buffer, " : ");
@@ -234,7 +235,9 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          envoyerPlateau(client->sock, client->partie->plateau);
          envoyerScore(client->sock, client->partie);
          return 1;
-      } else {
+      }
+      else
+      {
          write_client(client->sock, "Vous n'avez pas de défi en attente\n");
          return 1;
       }
@@ -295,6 +298,23 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          return 1;
       }
       return 1;
+   }
+   else if (strcmp(p, "/play") == 0)
+   {
+      p = strtok(NULL, d);
+      if (p == NULL)
+      {
+         write_client(client->sock, "WARNING : Enter a square between 1 and 6\n");
+      }
+      else
+      {
+         p = p[0];
+      }
+      if (p > '0' && p < '7')
+      {
+         int square = (int) p;
+         printf("la case choisie est %d",square);
+      }
    }
 
    // rajouter les commandes permettant de jouer
@@ -517,8 +537,8 @@ static void remove_client(Client *clients, int to_remove, int *actual, int *nbPa
          {
             remove_partie(parties, i, nbParties);
             i--;
-         } 
-         else 
+         }
+         else
          {
             if (parties[i].client1 > &clients[to_remove])
             {

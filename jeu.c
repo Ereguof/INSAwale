@@ -183,7 +183,7 @@ int coup_suivant(int plateau[], Client *client, int case_joueur)
     }
     return i;
 }
-
+/*
 void init_game(Client *client1, Client *client2, int plateau[])
 {
     for (int i = 0; i < TAILLE_PLATEAU; i++)
@@ -195,7 +195,7 @@ void init_game(Client *client1, Client *client2, int plateau[])
     client1->numJoueur = 1;
     client2->numJoueur = 2;
 }
-
+*/
 int fin_de_partie(Client *client1, Client *client2)
 {
     if (client1->nbGraines >= NB_GRAINES_WIN)
