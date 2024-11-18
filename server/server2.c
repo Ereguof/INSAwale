@@ -104,14 +104,6 @@ int enJeu(Client *client, Partie parties[MAX_PARTIES], int nbParties)
    }
    return 0;
 }
-{
-   if (client->partie != NULL)
-   {
-      return 1;
-   }
-   for (int i = 0; i < )
-   return 0;
-}
 
 int initPlateau(int plateau[TAILLE_PLATEAU])
 {
@@ -284,7 +276,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          write_client(client->sock, "Vous ne pouvez pas vous observer vous-même\n");
          return 1;
       }
-      else if (enJeu(client))
+      else if (enJeu(client, parties, *nbParties))
       {
          write_client(client->sock, "Vous êtes déjà en partie\n");
          return 1;
