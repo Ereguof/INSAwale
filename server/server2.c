@@ -357,6 +357,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       }
       else
       {
+         int square = 0;
          p = strtok(NULL, d);
          if (p == NULL)
          {
@@ -364,12 +365,12 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          }
          else
          {
-            p = p[0];
+            square = atoi(p);
          }
-         if (p > '0' && p < '7')
+         if (square > 0 && square < 7)
          {
-            int square = (int)p;
-            printf("la case choisie est %d", square);
+            // int square = (int)p;
+            printf("la case choisie est %d\n", square);
          }
       }
    }
