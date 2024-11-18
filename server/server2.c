@@ -142,8 +142,6 @@ int envoyerScore(SOCKET sock, Partie *partie)
 
 static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int actual, int *nbParties, Client *client, char *buffer)
 {
-   afficherClients(clients, actual);
-   afficherParties(parties, *nbParties);
    char d[] = " ";
    char *p = strtok(buffer, d); // permet de récupérer le premier mot de la commande
 
@@ -307,21 +305,39 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       }
       return 1;
    }
+   
    else if (strcmp(p, "/play") == 0)
    {
-      p = strtok(NULL, d);
-      if (p == NULL)
+      if (client->partie == NULL)
       {
-         write_client(client->sock, "WARNING : Enter a square between 1 and 6\n");
+         write_client(client->sock, "Vous n'êtes pas en partie\n");
+         return 1;
       }
-      else
+      else if (client->partie->accepted == 0)
       {
-         p = p[0];
+         write_client(client->sock, "La partie n'a pas encore été acceptée\n");
+         return 1;
       }
-      if (p > '0' && p < '7')
+      else if (client->partie->tour != client->numJoueur)
       {
-         int square = (int) p;
-         printf("la case choisie est %d",square);
+         write_client(client->sock, "Ce n'est pas votre tour\n");
+         return 1;
+      }
+      else{
+         p = strtok(NULL, d);
+         if (p == NULL)
+         {
+            write_client(client->sock, "WARNING : Enter a square between 1 and 6\n");
+         }
+         else
+         {
+            p = p[0];
+         }
+         if (p > '0' && p < '7')
+         {
+            int square = (int) p;
+            printf("la case choisie est %d",square);
+         }
       }
    }
 
