@@ -453,11 +453,6 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
 
    else if (strcmp(p, "/p") == 0) // permet de jouer un coup
    {
-      printf("tour : %d\n", client->partie->tour);
-      printf("numjoueur client 1 : %d\n", client->partie->client1->numJoueur);
-      printf("numjoueur client 2: %d\n", client->partie->client2->numJoueur);
-      printf("numjoueur client : %d\n", client->numJoueur);
-
       if (client->partie == NULL)
       {
          write_client(client->sock, "Vous n'êtes pas en partie\n");
