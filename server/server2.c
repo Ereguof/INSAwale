@@ -943,7 +943,7 @@ static void app(void) // permet de gérer les connexions des clients
                   closesocket(clients[i].sock);
                   strncpy(buffer, clientCurr->name, BUF_SIZE - 1);
                   strncat(buffer, " disconnected !\n", BUF_SIZE - strlen(buffer) - 1);
-                  send_message_to_all_clients(clients, *client, actual, buffer, 1);
+                  send_message_to_all_clients(clients, *clientCurr, actual, buffer, 1);
                   remove_client(clients, i, &actual, &nbParties, parties);
                }
                else
