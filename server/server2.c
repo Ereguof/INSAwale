@@ -350,9 +350,9 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
             write_client(client->sock, "Vous commencez\n");
             write_client(client->partie->client1->sock, "Votre adversaire commence\n");
          }
-         sendBoard(client->partie->client1->sock, client->partie->plateau);
+         sendBoard(client->partie->client1->sock, client->partie->plateau, client->partie->client1->numJoueur);
          sendScore(client->partie->client1->sock, client->partie);
-         sendBoard(client->sock, client->partie->plateau);
+         sendBoard(client->sock, client->partie->plateau, client->partie->client2->numJoueur);
          sendScore(client->sock, client->partie);
          return 1;
       }
@@ -434,7 +434,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
                strncat(message, clients[i].name, BUF_SIZE - strlen(message) - 1);
                strncat(message, "\n", BUF_SIZE - strlen(message) - 1);
                write_client(client->sock, message);
-               sendBoard(client->sock, clients[i].partie->plateau);
+               sendBoard(client->sock, clients[i].partie->plateau, 1);
                sendScore(client->sock, clients[i].partie);
                clients[i].partie->spectateurs[clients[i].partie->nbSpectateurs] = *client;
                clients[i].partie->nbSpectateurs++;
@@ -487,14 +487,15 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
             {
                char message[BUF_SIZE];
                message[0] = 0;
-               strcat(message, "La case choisie est");
+               strcat(message, "La case choisie est : ");
                strcat(message, p);
+               strcat(message, "\n");
                write_client(client->partie->client1->sock, message);
                write_client(client->partie->client2->sock, message);
                coup_suivant(client->partie->plateau, client, square);
-               sendBoard(client->partie->client1->sock, client->partie->plateau);
+               sendBoard(client->partie->client1->sock, client->partie->plateau, client->partie->client1->numJoueur);
                sendScore(client->partie->client1->sock, client->partie);
-               sendBoard(client->partie->client2->sock, client->partie->plateau);
+               sendBoard(client->partie->client2->sock, client->partie->plateau, client->partie->client2->numJoueur);
                sendScore(client->partie->client2->sock, client->partie);
 
                if (client->partie->tour == 1)
@@ -643,15 +644,16 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
    return 0;
 }
 
-char *serializeIntArray(char *buffer, int *array, int size) // permet de sérialiser un tableau d'entiers
+char *serializeIntArray(char *buffer, int *array, int size, int numPlayer) // permet de sérialiser un tableau d'entiers
 {
+   buffer += sprintf(buffer, "%d", numPlayer);
    for (int i = 0; i < size; i++)
    {
-      buffer += sprintf(buffer, "%d", array[i]);
       if (i < size - 1)
       {
          buffer += sprintf(buffer, ",");
       }
+      buffer += sprintf(buffer, "%d", array[i]);
    }
    return buffer;
 }
@@ -739,11 +741,11 @@ int initBoard(int plateau[TAILLE_PLATEAU]) // permet d'initialiser le plateau de
    return 0;
 }
 
-int sendBoard(SOCKET sock, int plateau[TAILLE_PLATEAU]) // permet d'envoyer le plateau de jeu à un client
+int sendBoard(SOCKET sock, int plateau[TAILLE_PLATEAU], int numPlayer) // permet d'envoyer le plateau de jeu à un client
 {
    char buffer[BUF_SIZE];
    buffer[0] = 'P';
-   serializeIntArray(buffer, plateau, TAILLE_PLATEAU);
+   serializeIntArray(buffer, plateau, TAILLE_PLATEAU, numPlayer);
    write_client(sock, buffer);
    write_client(sock, "\n");
    return 0;

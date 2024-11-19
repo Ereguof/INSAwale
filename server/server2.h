@@ -204,7 +204,7 @@ static int initBoard(int plateau[TAILLE_PLATEAU]);
  * @param plateau Game board array.
  * @return int Status code.
  */
-static int sendBoard(SOCKET sock, int plateau[TAILLE_PLATEAU]);
+static int sendBoard(SOCKET sock, int plateau[TAILLE_PLATEAU], int numPlayer);
 
 /**
  * @brief Sends the game score to a client.

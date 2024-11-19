@@ -66,6 +66,7 @@ int deserializeIntArray(char* buffer, int* array, int size)
 {
    char d[] = ",";
    char *p = strtok(buffer, d);
+   p = strtok(NULL, d);
    for (int i = 0; i < size; i++)
    {
       array[i] = atoi(p);
@@ -84,6 +85,7 @@ int * recevoirPlateau(SOCKET sock, int * plateau)
       exit(errno);
    }
    buffer[n] = 0;
+
    deserializeIntArray(buffer, plateau, TAILLE_PLATEAU);
    return plateau;
 }
