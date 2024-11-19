@@ -26,181 +26,148 @@ static void end(void)
 #endif
 }
 
-//FONCTION DE JEU
-
-void afficher_plateau(int plateau[], Client *client1, Client *client2, int num_joueur_appelant)
-{
-    printf("Plateau : pour j%d \n", num_joueur_appelant);
-
-    if (num_joueur_appelant == 1)
-    {
-        for (int i = TAILLE_PLATEAU - 1; i > TAILLE_PLATEAU / 2 - 1; i--)
-        {
-            printf("%0*d ", 2, plateau[i]);
-        }
-        printf("\n");
-        for (int i = 0; i < TAILLE_PLATEAU / 2; i++)
-        {
-            printf("%0*d ", 2, plateau[i]);
-        }
-    }
-    else
-    {
-        for (int i = (TAILLE_PLATEAU / 2) - 1; i >= 0; i--)
-        {
-            printf("%0*d ", 2, plateau[i]);
-        }
-        printf("\n");
-        for (int i = TAILLE_PLATEAU / 2; i < TAILLE_PLATEAU; i++)
-        {
-            printf("%0*d ", 2, plateau[i]);
-        }
-        printf("\n");
-    }
-    printf("\n");
-    printf("joueur 1 : %d\n", client1->nbGraines);
-    printf("joueur 2 : %d\n", client2->nbGraines);
-    printf("\n");
-}
+// FONCTION DE JEU
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 int cote_adverse_vide(int plateau[], Client *client)
 {
-    if (client->numJoueur == 2)
-    {
-        for (int i = 0; i < TAILLE_PLATEAU / 2; i++)
-        {
-            if (plateau[i] != 0)
-            {
-                return 0;
-            }
-        }
-    }
-    else if (client->numJoueur == 1)
-    {
-        for (int i = TAILLE_PLATEAU / 2; i < TAILLE_PLATEAU; i++)
-        {
-            if (plateau[i] != 0)
-            {
-                return 0;
-            }
-        }
-    }
-    return 1;
+   if (client->numJoueur == 2)
+   {
+      for (int i = 0; i < TAILLE_PLATEAU / 2; i++)
+      {
+         if (plateau[i] != 0)
+         {
+            return 0;
+         }
+      }
+   }
+   else if (client->numJoueur == 1)
+   {
+      for (int i = TAILLE_PLATEAU / 2; i < TAILLE_PLATEAU; i++)
+      {
+         if (plateau[i] != 0)
+         {
+            return 0;
+         }
+      }
+   }
+   return 1;
 }
 
 int coup_valide(int plateau[], Client *client, int case_joueur)
 {
-    if (case_joueur < 1 || case_joueur > TAILLE_PLATEAU / 2)
-    {
-        printf("Case invalide : choisis le bon nombre\n");
-        return 0;
-    }
-    if (client->numJoueur == 1)
-    {
-        if (cote_adverse_vide(plateau, client))
-        {
-            if (TAILLE_PLATEAU / 2 - case_joueur + 1 > plateau[case_joueur - 1])
-            {
-                printf("Case invalide : famine\n");
-                return 0;
-            }
-        }
-        if (plateau[case_joueur - 1] == 0)
-        {
-            printf("Case vide\n");
+   if (case_joueur < 1 || case_joueur > TAILLE_PLATEAU / 2)
+   {
+      printf("Case invalide : choisis le bon nombre\n");
+      return 0;
+   }
+   if (client->numJoueur == 1)
+   {
+      if (cote_adverse_vide(plateau, client))
+      {
+         if (TAILLE_PLATEAU / 2 - case_joueur + 1 > plateau[case_joueur - 1])
+         {
+            printf("Case invalide : famine\n");
             return 0;
-        }
-    }
-    else if (client->numJoueur == 2)
-    {
-        if (cote_adverse_vide(plateau, client))
-        {
-            if (TAILLE_PLATEAU / 2 - case_joueur + 1 > plateau[case_joueur - 1 + TAILLE_PLATEAU / 2])
-            {
-                printf("Case invalide : famine\n");
-                return 0;
-            }
-        }
-        if (plateau[case_joueur + 5] == 0)
-        {
-            printf("Case vide\n");
+         }
+      }
+      if (plateau[case_joueur - 1] == 0)
+      {
+         printf("Case vide\n");
+         return 0;
+      }
+   }
+   else if (client->numJoueur == 2)
+   {
+      if (cote_adverse_vide(plateau, client))
+      {
+         if (TAILLE_PLATEAU / 2 - case_joueur + 1 > plateau[case_joueur - 1 + TAILLE_PLATEAU / 2])
+         {
+            printf("Case invalide : famine\n");
             return 0;
-        }
-    }
-    return 1;
+         }
+      }
+      if (plateau[case_joueur + 5] == 0)
+      {
+         printf("Case vide\n");
+         return 0;
+      }
+   }
+   return 1;
 }
 
 int coup_suivant(int plateau[], Client *client, int case_joueur)
 {
-    case_joueur--;
-    if (client->numJoueur == 2)
-    {
-        case_joueur += TAILLE_PLATEAU / 2;
-    }
-    int nb_graines = plateau[case_joueur];
-    plateau[case_joueur] = 0;
-    int i = case_joueur + 1;
-    while (nb_graines > 0)
-    {
-        if (i != case_joueur)
-        {
-            plateau[i % TAILLE_PLATEAU]++;
-            nb_graines--;
-        }
-        i++;
-    }
-    i--;
+   case_joueur--;
+   if (client->numJoueur == 2)
+   {
+      case_joueur += TAILLE_PLATEAU / 2;
+   }
+   int nb_graines = plateau[case_joueur];
+   plateau[case_joueur] = 0;
+   int i = case_joueur + 1;
+   while (nb_graines > 0)
+   {
+      if (i != case_joueur)
+      {
+         plateau[i % TAILLE_PLATEAU]++;
+         nb_graines--;
+      }
+      i++;
+   }
+   i--;
 
-    int savePlateau[TAILLE_PLATEAU];
-    for (int i = 0; i < TAILLE_PLATEAU; i++)
-    {
-        savePlateau[i] = plateau[i];
-    }
-    int saveGraines = client->nbGraines;
+   int savePlateau[TAILLE_PLATEAU];
+   for (int i = 0; i < TAILLE_PLATEAU; i++)
+   {
+      savePlateau[i] = plateau[i];
+   }
+   int saveGraines = client->nbGraines;
 
-    if (client->numJoueur == 1)
-    {
-        while ((i % TAILLE_PLATEAU > TAILLE_PLATEAU / 2 - 1) && (plateau[i % TAILLE_PLATEAU] == 2 || plateau[i % TAILLE_PLATEAU] == 3))
-        {
-            client->nbGraines += plateau[i % TAILLE_PLATEAU];
-            plateau[i % TAILLE_PLATEAU] = 0;
-            i--;
-        }
-    }
-    else if (client->numJoueur == 2)
-    {
-        while ((i % TAILLE_PLATEAU < TAILLE_PLATEAU / 2) && (plateau[i % TAILLE_PLATEAU] == 2 || plateau[i % TAILLE_PLATEAU] == 3))
-        {
-            client->nbGraines += plateau[i % TAILLE_PLATEAU];
-            plateau[i % TAILLE_PLATEAU] = 0;
-            i--;
-        }
-    }
+   if (client->numJoueur == 1)
+   {
+      while ((i % TAILLE_PLATEAU > TAILLE_PLATEAU / 2 - 1) && (plateau[i % TAILLE_PLATEAU] == 2 || plateau[i % TAILLE_PLATEAU] == 3))
+      {
+         client->nbGraines += plateau[i % TAILLE_PLATEAU];
+         plateau[i % TAILLE_PLATEAU] = 0;
+         i--;
+      }
+   }
+   else if (client->numJoueur == 2)
+   {
+      while ((i % TAILLE_PLATEAU < TAILLE_PLATEAU / 2) && (plateau[i % TAILLE_PLATEAU] == 2 || plateau[i % TAILLE_PLATEAU] == 3))
+      {
+         client->nbGraines += plateau[i % TAILLE_PLATEAU];
+         plateau[i % TAILLE_PLATEAU] = 0;
+         i--;
+      }
+   }
 
-    if (cote_adverse_vide(plateau, client))
-    {
-        for (int i = 0; i < TAILLE_PLATEAU; i++)
-        {
-            plateau[i] = savePlateau[i];
-            client->nbGraines = saveGraines;
-        }
-    }
-    client->numJoueur = (client->partie->tour+1)%2;
-    return i;
+   if (cote_adverse_vide(plateau, client))
+   {
+      for (int i = 0; i < TAILLE_PLATEAU; i++)
+      {
+         plateau[i] = savePlateau[i];
+         client->nbGraines = saveGraines;
+      }
+   }
+   return i;
 }
 
 int fin_de_partie(Client *client1, Client *client2)
 {
-    if (client1->nbGraines >= NB_GRAINES_WIN)
-    {
-        return 1;
-    }
-    else if (client2->nbGraines >= NB_GRAINES_WIN)
-    {
-        return 2;
-    }
-    return 0;
+   if (client1->nbGraines >= NB_GRAINES_WIN)
+   {
+      return 1;
+   }
+   else if (client2->nbGraines >= NB_GRAINES_WIN)
+   {
+      return 2;
+   }
+   return 0;
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int actual, int *nbParties, Client *client, char *buffer) // permet de traiter les commandes des clients
 {
@@ -275,9 +242,9 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          client->partie->accepted = 1;
          client->partie->tour = random() % 2 + 1;
          initBoard(client->partie->plateau);
-         client->nbGraines = 0;
+         client->partie->client2->nbGraines = 0;
          client->partie->client1->nbGraines = 0;
-         client->numJoueur = 1;
+         client->partie->client1->numJoueur = 1;
          client->partie->client2->numJoueur = 2;
          write_client(client->sock, "Défi accepté\n");
          write_client(client->partie->client1->sock, "Défi accepté\n");
@@ -345,8 +312,8 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       }
    }
 
-   else if (strcmp(p, "/spectate") == 0)  // permet de spectater une partie
-   { 
+   else if (strcmp(p, "/spectate") == 0) // permet de spectater une partie
+   {
       p = strtok(NULL, d);
       if (p == NULL)
       {
@@ -392,6 +359,9 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
 
    else if (strcmp(p, "/play") == 0) // permet de jouer un coup
    {
+      printf("tour : %d\n", client->partie->tour);
+      printf("numjoueur : %d\n", client->partie->client1->numJoueur);
+      printf("numjoueur : %d\n", client->partie->client2->numJoueur);
       if (client->partie == NULL)
       {
          write_client(client->sock, "Vous n'êtes pas en partie\n");
@@ -404,8 +374,6 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       }
       else if (client->partie->tour != client->numJoueur)
       {
-         printf("tour : %d\n", client->partie->tour);
-         printf("numJoueur : %d\n", client->numJoueur);
          write_client(client->sock, "Ce n'est pas votre tour\n");
          return 1;
       }
@@ -423,7 +391,43 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          }
          if (square > 0 && square < 7)
          {
-            printf("la case choisie est %d\n", square);
+            if (coup_valide(client->partie->plateau, client, square))
+            {
+               char message[BUF_SIZE];
+               strncat(buffer, "la case choisie est", square);
+               write_client(client->partie->client1->sock, message);
+               write_client(client->partie->client2->sock, message);
+
+               coup_suivant(client->partie->plateau, client, square);
+               sendBoard(client->partie->client1->sock, client->partie->plateau);
+               sendScore(client->partie->client1->sock, client->partie);
+               sendBoard(client->partie->client2->sock, client->partie->plateau);
+               sendScore(client->partie->client2->sock, client->partie);
+               if (client->partie->tour == 1)
+               {
+                  client->partie->tour = 2;
+               }
+               if (client->partie->tour == 2)
+               {
+                  client->partie->tour = 1;
+               }
+               int res = fin_de_partie(client->partie->client2, client->partie->client1);
+
+               if (res == 1)
+               {
+                  write_client(client->partie->client1->sock, "Vous avez GAGNÉ !");
+                  write_client(client->partie->client2->sock, "Vous avez PERDU !");
+               }
+               if (res == 2)
+               {
+                  write_client(client->partie->client2->sock, "Vous avez GAGNÉ !");
+                  write_client(client->partie->client1->sock, "Vous avez PERDU !");
+               }
+            }
+         }
+         else
+         {
+            write_client(client->sock, "WARNING : Enter a square between 1 and 6\n");
          }
       }
    }
@@ -545,7 +549,6 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
    return 0;
 }
 
-
 char *serializeIntArray(char *buffer, int *array, int size) // permet de sérialiser un tableau d'entiers
 {
    for (int i = 0; i < size; i++)
@@ -599,7 +602,7 @@ int showGames(Partie *parties, int nbParties) // permet d'afficher la liste des 
    }
 }
 
-int showClients(Client *clients, int actual)  // permet d'afficher la liste des clients connectés
+int showClients(Client *clients, int actual) // permet d'afficher la liste des clients connectés
 {
    printf("Liste des clients connectés :\n");
    for (int i = 0; i < actual; i++)
@@ -634,7 +637,7 @@ int inSpectate(Client *client, Partie parties[MAX_PARTIES], int nbParties) // pe
 }
 
 int initBoard(int plateau[TAILLE_PLATEAU]) // permet d'initialiser le plateau de jeu
-{ 
+{
    for (int i = 0; i < TAILLE_PLATEAU; i++)
    {
       plateau[i] = NB_GRAINES / TAILLE_PLATEAU;
@@ -667,7 +670,6 @@ int sendScore(SOCKET sock, Partie *partie) // permet d'envoyer le score d'une pa
    write_client(sock, buffer);
    return 0;
 }
-
 
 static void remove_spectator(Client *spectateurs, int *nbSpectateurs, Client *client) // permet de retirer un spectateur de la liste des spectateurs
 {
@@ -896,7 +898,7 @@ static void send_message_to_all_clients(Client *clients, Client sender, int actu
    }
 }
 
-static int init_connection(void) 
+static int init_connection(void)
 {
    SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
    const int enable = 1;
