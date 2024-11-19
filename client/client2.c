@@ -25,7 +25,7 @@ static void end(void)
 #endif
 }
 
-/*void afficher_plateau(int plateau[], Client *client1, Client *client2, int num_joueur_appelant)
+void afficher_plateau(int plateau[], int num_joueur_appelant)
 {
    printf("Plateau : pour j%d \n", num_joueur_appelant);
 
@@ -54,12 +54,8 @@ static void end(void)
       }
       printf("\n");
    }
-   printf("\n");
-   printf("joueur 1 : %d\n", client1->nbGraines);
-   printf("joueur 2 : %d\n", client2->nbGraines);
-   printf("\n");
 }
-*/
+
 
 
 int deserializeIntArray(char* buffer, int* array, int size)
@@ -145,13 +141,8 @@ static void app(const char *address, const char *name)
          if (buffer[0] == 'P')
          {
             int plateau[TAILLE_PLATEAU];
-            recevoirPlateau(sock, plateau);
-            printf("Plateau reçu : ");
-            for (int i = 0; i < TAILLE_PLATEAU; i++)
-            {
-               printf("%d ", plateau[i]);
-            }
-            printf("\n");
+            
+            afficher_plateau(recevoirPlateau(sock, plateau), buffer[1]);
          }
          else
          {
