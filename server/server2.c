@@ -495,6 +495,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
                sendScore(client->partie->client1->sock, client->partie);
                sendBoard(client->partie->client2->sock, client->partie->plateau);
                sendScore(client->partie->client2->sock, client->partie);
+               
                if (client->partie->tour == 1)
                {
                   client->partie->tour = 2;
