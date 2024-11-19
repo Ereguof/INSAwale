@@ -423,7 +423,6 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          }
          if (square > 0 && square < 7)
          {
-            // int square = (int)p;
             printf("la case choisie est %d\n", square);
          }
       }
