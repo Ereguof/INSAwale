@@ -769,7 +769,6 @@ int sendScore(SOCKET sock, Partie *partie) // permet d'envoyer le score d'une pa
    strcat(message, " : ");
    strcat(message, nbGraines);
    strcat(message, "\n");
-   printf("Score : %s\n", message);
    write_client(sock, message);
    return 0;
 }
