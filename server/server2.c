@@ -332,6 +332,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       {
          client->partie->accepted = 1;
          client->partie->tour = random() % 2 + 1;
+         printf("tour : %d\n", client->partie->tour);
          initBoard(client->partie->plateau);
          client->partie->client2->nbGraines = 0;
          client->partie->client1->nbGraines = 0;
@@ -486,8 +487,8 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
             {
                char message[BUF_SIZE];
                message[0]=0;
-               strcat(message, "la case choisie est");
-               strcat(message, square);
+               strcat(message, "La case choisie est");
+               strcat(message, p);
                write_client(client->partie->client1->sock, message);
                write_client(client->partie->client2->sock, message);
                coup_suivant(client->partie->plateau, client, square);
