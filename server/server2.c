@@ -326,7 +326,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
 
    else if (strcmp(p, "/a") == 0) // permet d'accepter un défi
    {
-      if (client->partie != NULL && client->partie->accepted == 0 && inSpectate(client, parties, *nbParties) == 0)
+      if (client->partie != NULL && client->partie->accepted == 0 && inSpectate(client, parties, *nbParties) == 0 && client->partie->client2 == client)
       {
          client->partie->accepted = 1;
          client->partie->tour = random() % 2 + 1;
@@ -752,17 +752,18 @@ int sendBoard(SOCKET sock, int plateau[TAILLE_PLATEAU]) // permet d'envoyer le p
 
 int sendScore(SOCKET sock, Partie *partie) // permet d'envoyer le score d'une partie à un client
 {
-   char buffer[BUF_SIZE];
-   buffer[0] = 0;
-   buffer[0] = 'S';
-   strcat(buffer, partie->client1->name);
-   strcat(buffer, " : ");
-   sprintf(buffer, "%d", partie->client1->nbGraines);
-   strcat(buffer, " ");
-   strcat(buffer, partie->client2->name);
-   strcat(buffer, " : ");
-   sprintf(buffer, "%d", partie->client2->nbGraines);
-   write_client(sock, buffer);
+   char message[BUF_SIZE];
+   message[0] = 0;
+   strcat(message, "S");
+   strcat(message, partie->client1->name);
+   strcat(message, " : ");
+   // sprintf(message, "%d", partie->client1->nbGraines);
+   // strcat(message, " ");
+   // strcat(message, partie->client2->name);
+   // strcat(message, " : ");
+   // sprintf(message, "%d", partie->client2->nbGraines);
+   printf("Score : %s\n", message);
+   write_client(sock, message);
    return 0;
 }
 
