@@ -9,6 +9,7 @@ struct Client
 {
    SOCKET sock;
    char name[BUF_SIZE];
+   char bio[BUF_SIZE/2];
    int numJoueur;
    int nbGraines;
    Partie * partie;

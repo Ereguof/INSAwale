@@ -182,6 +182,14 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
 static int inSpectate(Client *client, Partie parties[MAX_PARTIES], int nbParties);
 
 /**
+ * @brief Checks if a client is in a game.
+ * 
+ * @param client The client to check.
+ * @return int 1 if the client is in game, 0 otherwise.
+ */
+static int inGame(Client *client);
+
+/**
  * @brief Initializes the game board.
  * 
  * @param plateau Game board array.

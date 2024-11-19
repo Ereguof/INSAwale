@@ -7,6 +7,7 @@ L’objectif du TP est de réaliser un serveur de jeu Awalé. Le but est d’avo
 ### Voici la liste des commandes et fonctionnalités disponibles :
 
 /list : affiche la liste des participants connectés
+/games : affiche la liste des parties en cours
 /challenge [pseudo] : défie un joueur
 /accept : accepte un défi
 /deny : refuse un défi
