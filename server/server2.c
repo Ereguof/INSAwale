@@ -26,128 +26,6 @@ static void end(void)
 #endif
 }
 
-char *serializeIntArray(char *buffer, int *array, int size) // permet de sérialiser un tableau d'entiers
-{
-   for (int i = 0; i < size; i++)
-   {
-      buffer += sprintf(buffer, "%d", array[i]);
-      if (i < size - 1)
-      {
-         buffer += sprintf(buffer, ",");
-      }
-   }
-   return buffer;
-}
-
-int showGame(Partie *partie) // permet d'afficher l'état d'une partie
-{
-   printf("Client 1 : %s\n", partie->client1->name);
-   printf("Client 2 : %s\n", partie->client2->name);
-   printf("Plateau : ");
-   for (int i = 0; i < TAILLE_PLATEAU; i++)
-   {
-      printf("%d ", partie->plateau[i]);
-   }
-   printf("\n");
-   printf("Accepted : %d\n", partie->accepted);
-   printf("Tour : %d\n", partie->tour);
-   printf("Nombre de spectateurs : %d\n", partie->nbSpectateurs);
-   printf("Spectateurs : ");
-   for (int i = 0; i < partie->nbSpectateurs; i++)
-   {
-      printf("%s\n", partie->spectateurs[i].name);
-   }
-   return 0;
-}
-
-int showGames(Partie *parties, int nbParties) // permet d'afficher la liste des parties en cours
-{
-   printf("Liste des parties en cours :\n");
-   printf("Nombre de parties : %d\n", nbParties);
-   for (int i = 0; i < nbParties; i++)
-   {
-      if (parties[i].accepted == 1)
-      {
-         printf("Partie %d\n", i + 1);
-         showGame(&parties[i]);
-      }
-      else
-      {
-         printf("Partie non acceptée\n");
-         showGame(&parties[i]);
-      }
-   }
-}
-
-int showClients(Client *clients, int actual)  // permet d'afficher la liste des clients connectés
-{
-   printf("Liste des clients connectés :\n");
-   for (int i = 0; i < actual; i++)
-   {
-      printf("Client %d : %s\n", i, clients[i].name);
-   }
-   return 0;
-}
-
-int inGame(Client *client) // permet de savoir si un client est en partie
-{
-   if (client->partie != NULL)
-   {
-      return 1;
-   }
-   return 0;
-}
-
-int inSpectate(Client *client, Partie parties[MAX_PARTIES], int nbParties) // permet de savoir si un client est en mode spectateur
-{
-   for (int i = 0; i < nbParties; i++)
-   {
-      for (int j = 0; j < parties[i].nbSpectateurs; j++)
-      {
-         if (strcmp(parties[i].spectateurs[j].name, client->name) == 0)
-         {
-            return 1;
-         }
-      }
-   }
-   return 0;
-}
-
-int initBoard(int plateau[TAILLE_PLATEAU]) // permet d'initialiser le plateau de jeu
-{ 
-   for (int i = 0; i < TAILLE_PLATEAU; i++)
-   {
-      plateau[i] = NB_GRAINES / TAILLE_PLATEAU;
-   }
-   return 0;
-}
-
-int sendBoard(SOCKET sock, int plateau[TAILLE_PLATEAU]) // permet d'envoyer le plateau de jeu à un client
-{
-   char buffer[BUF_SIZE];
-   buffer[0] = 'P';
-   serializeIntArray(buffer, plateau, TAILLE_PLATEAU);
-   write_client(sock, buffer);
-   write_client(sock, "\n");
-   return 0;
-}
-
-int sendScore(SOCKET sock, Partie *partie) // permet d'envoyer le score d'une partie à un client
-{
-   char buffer[BUF_SIZE];
-   buffer[0] = 0;
-   buffer[0] = 'S';
-   strcat(buffer, partie->client1->name);
-   strcat(buffer, " : ");
-   sprintf(buffer, "%d", partie->client1->nbGraines);
-   strcat(buffer, " ");
-   strcat(buffer, partie->client2->name);
-   strcat(buffer, " : ");
-   sprintf(buffer, "%d", partie->client2->nbGraines);
-   write_client(sock, buffer);
-   return 0;
-}
-
 static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int actual, int *nbParties, Client *client, char *buffer) // permet de traiter les commandes des clients
 {
    char d[] = " ";
@@ -492,6 +370,197 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
    return 0;
 }
 
+
+char *serializeIntArray(char *buffer, int *array, int size) // permet de sérialiser un tableau d'entiers
+{
+   for (int i = 0; i < size; i++)
+   {
+      buffer += sprintf(buffer, "%d", array[i]);
+      if (i < size - 1)
+      {
+         buffer += sprintf(buffer, ",");
+      }
+   }
+   return buffer;
+}
+
+int showGame(Partie *partie) // permet d'afficher l'état d'une partie
+{
+   printf("Client 1 : %s\n", partie->client1->name);
+   printf("Client 2 : %s\n", partie->client2->name);
+   printf("Plateau : ");
+   for (int i = 0; i < TAILLE_PLATEAU; i++)
+   {
+      printf("%d ", partie->plateau[i]);
+   }
+   printf("\n");
+   printf("Accepted : %d\n", partie->accepted);
+   printf("Tour : %d\n", partie->tour);
+   printf("Nombre de spectateurs : %d\n", partie->nbSpectateurs);
+   printf("Spectateurs : ");
+   for (int i = 0; i < partie->nbSpectateurs; i++)
+   {
+      printf("%s\n", partie->spectateurs[i].name);
+   }
+   return 0;
+}
+
+int showGames(Partie *parties, int nbParties) // permet d'afficher la liste des parties en cours
+{
+   printf("Liste des parties en cours :\n");
+   printf("Nombre de parties : %d\n", nbParties);
+   for (int i = 0; i < nbParties; i++)
+   {
+      if (parties[i].accepted == 1)
+      {
+         printf("Partie %d\n", i + 1);
+         showGame(&parties[i]);
+      }
+      else
+      {
+         printf("Partie non acceptée\n");
+         showGame(&parties[i]);
+      }
+   }
+}
+
+int showClients(Client *clients, int actual)  // permet d'afficher la liste des clients connectés
+{
+   printf("Liste des clients connectés :\n");
+   for (int i = 0; i < actual; i++)
+   {
+      printf("Client %d : %s\n", i, clients[i].name);
+   }
+   return 0;
+}
+
+int inGame(Client *client) // permet de savoir si un client est en partie
+{
+   if (client->partie != NULL)
+   {
+      return 1;
+   }
+   return 0;
+}
+
+int inSpectate(Client *client, Partie parties[MAX_PARTIES], int nbParties) // permet de savoir si un client est en mode spectateur
+{
+   for (int i = 0; i < nbParties; i++)
+   {
+      for (int j = 0; j < parties[i].nbSpectateurs; j++)
+      {
+         if (strcmp(parties[i].spectateurs[j].name, client->name) == 0)
+         {
+            return 1;
+         }
+      }
+   }
+   return 0;
+}
+
+int initBoard(int plateau[TAILLE_PLATEAU]) // permet d'initialiser le plateau de jeu
+{ 
+   for (int i = 0; i < TAILLE_PLATEAU; i++)
+   {
+      plateau[i] = NB_GRAINES / TAILLE_PLATEAU;
+   }
+   return 0;
+}
+
+int sendBoard(SOCKET sock, int plateau[TAILLE_PLATEAU]) // permet d'envoyer le plateau de jeu à un client
+{
+   char buffer[BUF_SIZE];
+   buffer[0] = 'P';
+   serializeIntArray(buffer, plateau, TAILLE_PLATEAU);
+   write_client(sock, buffer);
+   write_client(sock, "\n");
+   return 0;
+}
+
+int sendScore(SOCKET sock, Partie *partie) // permet d'envoyer le score d'une partie à un client
+{
+   char buffer[BUF_SIZE];
+   buffer[0] = 0;
+   buffer[0] = 'S';
+   strcat(buffer, partie->client1->name);
+   strcat(buffer, " : ");
+   sprintf(buffer, "%d", partie->client1->nbGraines);
+   strcat(buffer, " ");
+   strcat(buffer, partie->client2->name);
+   strcat(buffer, " : ");
+   sprintf(buffer, "%d", partie->client2->nbGraines);
+   write_client(sock, buffer);
+   return 0;
+}
+
+
+static void remove_spectator(Client *spectateurs, int *nbSpectateurs, Client *client) // permet de retirer un spectateur de la liste des spectateurs
+{
+   for (int i = 0; i < *nbSpectateurs; i++)
+   {
+      if (strcmp(spectateurs[i].name, client->name) == 0)
+      {
+         memmove(spectateurs + i, spectateurs + i + 1, (*nbSpectateurs - i - 1) * sizeof(Client));
+         (*nbSpectateurs)--;
+      }
+   }
+}
+
+static void remove_client(Client *clients, int to_remove, int *actual, int *nbParties, Partie *parties) // permet de retirer un client de la liste des clients
+{
+   if (clients[to_remove].partie != NULL)
+   {
+      if (clients[to_remove].partie->client1 == &clients[to_remove])
+      {
+         write_client(clients[to_remove].partie->client2->sock, "L'adversaire s'est déconnecté\n");
+         clients[to_remove].partie->client2->partie = NULL;
+      }
+      else
+      {
+         write_client(clients[to_remove].partie->client1->sock, "L'adversaire s'est déconnecté\n");
+         clients[to_remove].partie->client1->partie = NULL;
+      }
+      for (int i = 0; i < *nbParties; i++)
+      {
+         if (parties[i].client1 == &clients[to_remove] || parties[i].client2 == &clients[to_remove])
+         {
+            remove_game(parties, i, nbParties);
+            i--;
+         }
+         else
+         {
+            if (parties[i].client1 > &clients[to_remove])
+            {
+               parties[i].client1--;
+            }
+            if (parties[i].client2 > &clients[to_remove])
+            {
+               parties[i].client2--;
+            }
+            for (int j = 0; j < parties[i].nbSpectateurs; j++)
+            {
+               if (strcmp(parties[i].spectateurs[j].name, clients[to_remove].name) == 0)
+               {
+                  remove_spectator(parties[i].spectateurs, &parties[i].nbSpectateurs, &clients[to_remove]);
+               }
+            }
+         }
+      }
+   }
+   /* we remove the client in the array */
+   memmove(clients + to_remove, clients + to_remove + 1, (*actual - to_remove - 1) * sizeof(Client));
+   /* number client - 1 */
+   (*actual)--;
+}
+
+static void remove_game(Partie *parties, int to_remove, int *nbParties) // permet de retirer une partie de la liste des parties
+{
+   parties[to_remove].client1->partie = NULL;
+   parties[to_remove].client2->partie = NULL;
+   memmove(parties + to_remove, parties + to_remove + 1, (*nbParties - to_remove - 1) * sizeof(Partie));
+   (*nbParties)--;
+}
+
 static void app(void) // permet de gérer les connexions des clients
 {
    SOCKET sock = init_connection();
@@ -628,73 +697,6 @@ static void clear_clients(Client *clients, int actual) // permet de déconnecter
    {
       closesocket(clients[i].sock);
    }
-}
-
-static void remove_spectator(Client *spectateurs, int *nbSpectateurs, Client *client) // permet de retirer un spectateur de la liste des spectateurs
-{
-   for (int i = 0; i < *nbSpectateurs; i++)
-   {
-      if (strcmp(spectateurs[i].name, client->name) == 0)
-      {
-         memmove(spectateurs + i, spectateurs + i + 1, (*nbSpectateurs - i - 1) * sizeof(Client));
-         (*nbSpectateurs)--;
-      }
-   }
-}
-
-static void remove_client(Client *clients, int to_remove, int *actual, int *nbParties, Partie *parties) // permet de retirer un client de la liste des clients
-{
-   if (clients[to_remove].partie != NULL)
-   {
-      if (clients[to_remove].partie->client1 == &clients[to_remove])
-      {
-         write_client(clients[to_remove].partie->client2->sock, "L'adversaire s'est déconnecté\n");
-         clients[to_remove].partie->client2->partie = NULL;
-      }
-      else
-      {
-         write_client(clients[to_remove].partie->client1->sock, "L'adversaire s'est déconnecté\n");
-         clients[to_remove].partie->client1->partie = NULL;
-      }
-      for (int i = 0; i < *nbParties; i++)
-      {
-         if (parties[i].client1 == &clients[to_remove] || parties[i].client2 == &clients[to_remove])
-         {
-            remove_game(parties, i, nbParties);
-            i--;
-         }
-         else
-         {
-            if (parties[i].client1 > &clients[to_remove])
-            {
-               parties[i].client1--;
-            }
-            if (parties[i].client2 > &clients[to_remove])
-            {
-               parties[i].client2--;
-            }
-            for (int j = 0; j < parties[i].nbSpectateurs; j++)
-            {
-               if (strcmp(parties[i].spectateurs[j].name, clients[to_remove].name) == 0)
-               {
-                  remove_spectator(parties[i].spectateurs, &parties[i].nbSpectateurs, &clients[to_remove]);
-               }
-            }
-         }
-      }
-   }
-   /* we remove the client in the array */
-   memmove(clients + to_remove, clients + to_remove + 1, (*actual - to_remove - 1) * sizeof(Client));
-   /* number client - 1 */
-   (*actual)--;
-}
-
-static void remove_game(Partie *parties, int to_remove, int *nbParties) // permet de retirer une partie de la liste des parties
-{
-   parties[to_remove].client1->partie = NULL;
-   parties[to_remove].client2->partie = NULL;
-   memmove(parties + to_remove, parties + to_remove + 1, (*nbParties - to_remove - 1) * sizeof(Partie));
-   (*nbParties)--;
 }
 
 static void send_message_to_all_clients(Client *clients, Client sender, int actual, const char *buffer, char from_server) // permet d'envoyer un message à tous les participants
