@@ -275,7 +275,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       return 1;
    }
 
-   else if (strcmp(p, "/challenge") == 0) // permet de défier un joueur
+   else if (strcmp(p, "/ch") == 0) // permet de défier un joueur
    {
       p = strtok(NULL, d);
       if (p == NULL)
@@ -324,7 +324,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       return 1;
    }
 
-   else if (strcmp(p, "/accept") == 0) // permet d'accepter un défi
+   else if (strcmp(p, "/a") == 0) // permet d'accepter un défi
    {
       if (client->partie != NULL && client->partie->accepted == 0 && inSpectate(client, parties, *nbParties) == 0)
       {
@@ -449,11 +449,13 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       return 1;
    }
 
-   else if (strcmp(p, "/play") == 0) // permet de jouer un coup
+   else if (strcmp(p, "/p") == 0) // permet de jouer un coup
    {
       printf("tour : %d\n", client->partie->tour);
-      printf("numjoueur : %d\n", client->partie->client1->numJoueur);
-      printf("numjoueur : %d\n", client->partie->client2->numJoueur);
+      printf("numjoueur client 1 : %d\n", client->partie->client1->numJoueur);
+      printf("numjoueur client 2: %d\n", client->partie->client2->numJoueur);
+      printf("numjoueur client : %d\n", client->numJoueur);
+
       if (client->partie == NULL)
       {
          write_client(client->sock, "Vous n'êtes pas en partie\n");
@@ -486,16 +488,16 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
             if (coup_valide(client->partie->plateau, client, square))
             {
                char message[BUF_SIZE];
-               strncat(buffer, "la case choisie est", square);
+               message[0]=0;
+               strcat(message, "la case choisie est", square);
                write_client(client->partie->client1->sock, message);
                write_client(client->partie->client2->sock, message);
-
                coup_suivant(client->partie->plateau, client, square);
                sendBoard(client->partie->client1->sock, client->partie->plateau);
                sendScore(client->partie->client1->sock, client->partie);
                sendBoard(client->partie->client2->sock, client->partie->plateau);
                sendScore(client->partie->client2->sock, client->partie);
-               
+              
                if (client->partie->tour == 1)
                {
                   client->partie->tour = 2;
