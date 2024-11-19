@@ -6,6 +6,8 @@
 #include "server2.h"
 #include "client2.h"
 
+#define atoa(x) #x
+
 static void init(void)
 {
 #ifdef WIN32
@@ -753,16 +755,19 @@ int sendBoard(SOCKET sock, int plateau[TAILLE_PLATEAU]) // permet d'envoyer le p
 
 int sendScore(SOCKET sock, Partie *partie) // permet d'envoyer le score d'une partie à un client
 {
+   char nbGraines[12];
+   sprintf(nbGraines, "%d", partie->client1->nbGraines);
    char message[BUF_SIZE];
    message[0] = 0;
-   strcat(message, "S");
    strcat(message, partie->client1->name);
    strcat(message, " : ");
-   // sprintf(message, "%d", partie->client1->nbGraines);
-   // strcat(message, " ");
-   // strcat(message, partie->client2->name);
-   // strcat(message, " : ");
-   // sprintf(message, "%d", partie->client2->nbGraines);
+   strcat(message, nbGraines);
+   sprintf(nbGraines, "%d", partie->client2->nbGraines);
+   strcat(message, "    ");
+   strcat(message, partie->client2->name);
+   strcat(message, " : ");
+   strcat(message, nbGraines);
+   strcat(message, "\n");
    printf("Score : %s\n", message);
    write_client(sock, message);
    return 0;
