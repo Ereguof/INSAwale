@@ -195,7 +195,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       return 1;
    }
 
-    else if (strcmp(p, "/setbio") == 0)
+   else if (strcmp(p, "/setbio") == 0)
    {
       p = strtok(NULL, d);
       if (p == NULL)
@@ -203,7 +203,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          write_client(client->sock, "Veuillez entrer une biographie\n");
          return 1;
       }
-      char message[BUF_SIZE/2];
+      char message[BUF_SIZE / 2];
       message[0] = 0;
       while (p != NULL)
       {
@@ -211,12 +211,12 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          strcat(message, " ");
          p = strtok(NULL, d);
       }
-      strncpy(client->bio, message, BUF_SIZE/2 - 1);
+      strncpy(client->bio, message, BUF_SIZE / 2 - 1);
       write_client(client->sock, "Biographie mise à jour\n");
       return 1;
    }
 
-   else if (strcmp(p, "/bio") == 0)  // permet d'afficher la biographie du joueur choisi
+   else if (strcmp(p, "/bio") == 0) // permet d'afficher la biographie du joueur choisi
    {
       p = strtok(NULL, d);
       if (p == NULL)
@@ -486,7 +486,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
             if (coup_valide(client->partie->plateau, client, square))
             {
                char message[BUF_SIZE];
-               message[0]=0;
+               message[0] = 0;
                strcat(message, "La case choisie est");
                strcat(message, p);
                write_client(client->partie->client1->sock, message);
@@ -496,12 +496,12 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
                sendScore(client->partie->client1->sock, client->partie);
                sendBoard(client->partie->client2->sock, client->partie->plateau);
                sendScore(client->partie->client2->sock, client->partie);
-              
+
                if (client->partie->tour == 1)
                {
                   client->partie->tour = 2;
                }
-               if (client->partie->tour == 2)
+               else if (client->partie->tour == 2)
                {
                   client->partie->tour = 1;
                }
@@ -822,7 +822,7 @@ static void remove_client(Client *clients, int to_remove, int *actual, int *nbPa
          }
       }
    }
-   
+
    /* we remove the client in the array */
    memmove(clients + to_remove, clients + to_remove + 1, (*actual - to_remove - 1) * sizeof(Client));
    /* number client - 1 */
