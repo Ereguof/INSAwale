@@ -789,33 +789,34 @@ static void remove_client(Client *clients, int to_remove, int *actual, int *nbPa
          write_client(clients[to_remove].partie->client1->sock, "L'adversaire s'est déconnecté\n");
          clients[to_remove].partie->client1->partie = NULL;
       }
-      for (int i = 0; i < *nbParties; i++)
+   }
+   for (int i = 0; i < *nbParties; i++)
+   {
+      if (parties[i].client1 == &clients[to_remove] || parties[i].client2 == &clients[to_remove])
       {
-         if (parties[i].client1 == &clients[to_remove] || parties[i].client2 == &clients[to_remove])
+         remove_game(parties, i, nbParties);
+         i--;
+      }
+      else
+      {
+         if (parties[i].client1 > &clients[to_remove])
          {
-            remove_game(parties, i, nbParties);
-            i--;
+            parties[i].client1--;
          }
-         else
+         if (parties[i].client2 > &clients[to_remove])
          {
-            if (parties[i].client1 > &clients[to_remove])
+            parties[i].client2--;
+         }
+         for (int j = 0; j < parties[i].nbSpectateurs; j++)
+         {
+            if (strcmp(parties[i].spectateurs[j].name, clients[to_remove].name) == 0)
             {
-               parties[i].client1--;
-            }
-            if (parties[i].client2 > &clients[to_remove])
-            {
-               parties[i].client2--;
-            }
-            for (int j = 0; j < parties[i].nbSpectateurs; j++)
-            {
-               if (strcmp(parties[i].spectateurs[j].name, clients[to_remove].name) == 0)
-               {
-                  remove_spectator(parties[i].spectateurs, &parties[i].nbSpectateurs, &clients[to_remove]);
-               }
+               remove_spectator(parties[i].spectateurs, &parties[i].nbSpectateurs, &clients[to_remove]);
             }
          }
       }
    }
+   
    /* we remove the client in the array */
    memmove(clients + to_remove, clients + to_remove + 1, (*actual - to_remove - 1) * sizeof(Client));
    /* number client - 1 */
