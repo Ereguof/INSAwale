@@ -26,6 +26,182 @@ static void end(void)
 #endif
 }
 
+//FONCTION DE JEU
+
+void afficher_plateau(int plateau[], Client *client1, Client *client2, int num_joueur_appelant)
+{
+    printf("Plateau : pour j%d \n", num_joueur_appelant);
+
+    if (num_joueur_appelant == 1)
+    {
+        for (int i = TAILLE_PLATEAU - 1; i > TAILLE_PLATEAU / 2 - 1; i--)
+        {
+            printf("%0*d ", 2, plateau[i]);
+        }
+        printf("\n");
+        for (int i = 0; i < TAILLE_PLATEAU / 2; i++)
+        {
+            printf("%0*d ", 2, plateau[i]);
+        }
+    }
+    else
+    {
+        for (int i = (TAILLE_PLATEAU / 2) - 1; i >= 0; i--)
+        {
+            printf("%0*d ", 2, plateau[i]);
+        }
+        printf("\n");
+        for (int i = TAILLE_PLATEAU / 2; i < TAILLE_PLATEAU; i++)
+        {
+            printf("%0*d ", 2, plateau[i]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+    printf("joueur 1 : %d\n", client1->nbGraines);
+    printf("joueur 2 : %d\n", client2->nbGraines);
+    printf("\n");
+}
+
+int cote_adverse_vide(int plateau[], Client *client)
+{
+    if (client->numJoueur == 2)
+    {
+        for (int i = 0; i < TAILLE_PLATEAU / 2; i++)
+        {
+            if (plateau[i] != 0)
+            {
+                return 0;
+            }
+        }
+    }
+    else if (client->numJoueur == 1)
+    {
+        for (int i = TAILLE_PLATEAU / 2; i < TAILLE_PLATEAU; i++)
+        {
+            if (plateau[i] != 0)
+            {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+int coup_valide(int plateau[], Client *client, int case_joueur)
+{
+    if (case_joueur < 1 || case_joueur > TAILLE_PLATEAU / 2)
+    {
+        printf("Case invalide : choisis le bon nombre\n");
+        return 0;
+    }
+    if (client->numJoueur == 1)
+    {
+        if (cote_adverse_vide(plateau, client))
+        {
+            if (TAILLE_PLATEAU / 2 - case_joueur + 1 > plateau[case_joueur - 1])
+            {
+                printf("Case invalide : famine\n");
+                return 0;
+            }
+        }
+        if (plateau[case_joueur - 1] == 0)
+        {
+            printf("Case vide\n");
+            return 0;
+        }
+    }
+    else if (client->numJoueur == 2)
+    {
+        if (cote_adverse_vide(plateau, client))
+        {
+            if (TAILLE_PLATEAU / 2 - case_joueur + 1 > plateau[case_joueur - 1 + TAILLE_PLATEAU / 2])
+            {
+                printf("Case invalide : famine\n");
+                return 0;
+            }
+        }
+        if (plateau[case_joueur + 5] == 0)
+        {
+            printf("Case vide\n");
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int coup_suivant(int plateau[], Client *client, int case_joueur)
+{
+    case_joueur--;
+    if (client->numJoueur == 2)
+    {
+        case_joueur += TAILLE_PLATEAU / 2;
+    }
+    int nb_graines = plateau[case_joueur];
+    plateau[case_joueur] = 0;
+    int i = case_joueur + 1;
+    while (nb_graines > 0)
+    {
+        if (i != case_joueur)
+        {
+            plateau[i % TAILLE_PLATEAU]++;
+            nb_graines--;
+        }
+        i++;
+    }
+    i--;
+
+    int savePlateau[TAILLE_PLATEAU];
+    for (int i = 0; i < TAILLE_PLATEAU; i++)
+    {
+        savePlateau[i] = plateau[i];
+    }
+    int saveGraines = client->nbGraines;
+
+    if (client->numJoueur == 1)
+    {
+        while ((i % TAILLE_PLATEAU > TAILLE_PLATEAU / 2 - 1) && (plateau[i % TAILLE_PLATEAU] == 2 || plateau[i % TAILLE_PLATEAU] == 3))
+        {
+            client->nbGraines += plateau[i % TAILLE_PLATEAU];
+            plateau[i % TAILLE_PLATEAU] = 0;
+            i--;
+        }
+    }
+    else if (client->numJoueur == 2)
+    {
+        while ((i % TAILLE_PLATEAU < TAILLE_PLATEAU / 2) && (plateau[i % TAILLE_PLATEAU] == 2 || plateau[i % TAILLE_PLATEAU] == 3))
+        {
+            client->nbGraines += plateau[i % TAILLE_PLATEAU];
+            plateau[i % TAILLE_PLATEAU] = 0;
+            i--;
+        }
+    }
+
+    if (cote_adverse_vide(plateau, client))
+    {
+        for (int i = 0; i < TAILLE_PLATEAU; i++)
+        {
+            plateau[i] = savePlateau[i];
+            client->nbGraines = saveGraines;
+        }
+    }
+    client->numJoueur = (client->partie->tour+1)%2;
+    return i;
+}
+
+int fin_de_partie(Client *client1, Client *client2)
+{
+    if (client1->nbGraines >= NB_GRAINES_WIN)
+    {
+        return 1;
+    }
+    else if (client2->nbGraines >= NB_GRAINES_WIN)
+    {
+        return 2;
+    }
+    return 0;
+}
+
 static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int actual, int *nbParties, Client *client, char *buffer) // permet de traiter les commandes des clients
 {
    char d[] = " ";

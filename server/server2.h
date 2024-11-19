@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #ifdef WIN32
 
 #include <winsock2.h>
@@ -26,11 +28,6 @@ typedef struct in_addr IN_ADDR;
 
 #ifndef SERVER_H
 #define SERVER_H
-
-typedef struct sockaddr_in SOCKADDR_IN;
-typedef struct sockaddr SOCKADDR;
-typedef struct in_addr IN_ADDR;
-
 #define CRLF "\r\n"
 #define PORT 1977
 #define MAX_CLIENTS 100
@@ -46,6 +43,10 @@ typedef struct Client Client;
 
 #include "client2.h"
 
+typedef struct sockaddr_in SOCKADDR_IN;
+typedef struct sockaddr SOCKADDR;
+typedef struct in_addr IN_ADDR;
+
 struct Partie
 {
     int accepted;
@@ -57,7 +58,11 @@ struct Partie
     Client spectateurs[MAX_CLIENTS];
 };
 
-
+static void afficher_plateau(int plateau[], Client *client1, Client *client2, int num_joueur_appelant);
+static int cote_adverse_vide(int plateau[], Client *client);
+static int coup_valide(int plateau[], Client *client, int case_joueur);
+static int coup_suivant(int plateau[], Client *client, int case_joueur);
+static int fin_de_partie(Client *client1, Client *client2);
 
 /**
  * @brief Initializes the server.
