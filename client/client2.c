@@ -10,7 +10,7 @@ static void init(void)
 #ifdef WIN32
    WSADATA wsa;
    int err = WSAStartup(MAKEWORD(2, 2), &wsa);
-   if(err < 0)
+   if (err < 0)
    {
       puts("WSAStartup failed !");
       exit(EXIT_FAILURE);
@@ -25,43 +25,12 @@ static void end(void)
 #endif
 }
 
-void afficher_plateau(int plateau[], int num_joueur_appelant)
-{
-   printf("Plateau : pour j%d \n", num_joueur_appelant);
-
-   if (num_joueur_appelant == 1)
-   {
-      for (int i = TAILLE_PLATEAU - 1; i > TAILLE_PLATEAU / 2 - 1; i--)
-      {
-         printf("%0*d ", 2, plateau[i]);
-      }
-      printf("\n");
-      for (int i = 0; i < TAILLE_PLATEAU / 2; i++)
-      {
-         printf("%0*d ", 2, plateau[i]);
-      }
-   }
-   else
-   {
-      for (int i = (TAILLE_PLATEAU / 2) - 1; i >= 0; i--)
-      {
-         printf("%0*d ", 2, plateau[i]);
-      }
-      printf("\n");
-      for (int i = TAILLE_PLATEAU / 2; i < TAILLE_PLATEAU; i++)
-      {
-         printf("%0*d ", 2, plateau[i]);
-      }
-      printf("\n");
-   }
-}
-
 int *recevoirPlateau(char *buffer, int *plateau)
 {
    char d[] = ",";
    char *p = strtok(buffer, d);
    p = strtok(NULL, d);
-   printf("p : %s\n", p);
+   p = strtok(NULL, d);
    for (int i = 0; i < TAILLE_PLATEAU; i++)
    {
       plateau[i] = atoi(p);
@@ -118,20 +87,14 @@ static void app(const char *address, const char *name)
       else if (FD_ISSET(sock, &rdfs))
       {
          int n = read_server(sock, buffer);
-         printf("=============================================\n");
-         printf("buffer : %s\n", buffer);
-         printf("=============================================\n");
+         // printf("=============================================\n");
+         // printf("p_total : %s\n", buffer);
+         // printf("=============================================\n");
          /* server down */
          if (n == 0)
          {
             printf("Server disconnected !\n");
             break;
-         }
-         if (buffer[0] == 'P')
-         {
-            int plateau[TAILLE_PLATEAU];
-            printf("Plateau reçu\n");
-            afficher_plateau(recevoirPlateau(buffer, plateau), buffer[1]);
          }
          else
          {

@@ -30,6 +30,47 @@ static void end(void)
 
 // FONCTION DE JEU
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
+char *afficher_plateau(int plateau[], int num_joueur_appelant, char *message)
+{
+   message[0] = 0;
+
+   char temp[12];
+   strcat(message, "Plateau : pour joueur ");
+   sprintf(temp, "%d", num_joueur_appelant);
+   strcat(message, temp);
+   strcat(message, "\n");
+
+   if (num_joueur_appelant == 1)
+   {
+      for (int i = TAILLE_PLATEAU - 1; i > TAILLE_PLATEAU / 2 - 1; i--)
+      {
+         sprintf(temp, "%0*d ", 2, plateau[i]);
+         strcat(message, temp);
+      }
+      strcat(message, "\n");
+      for (int i = 0; i < TAILLE_PLATEAU / 2; i++)
+      {
+         sprintf(temp, "%0*d ", 2, plateau[i]);
+         strcat(message, temp);
+      }
+   }
+   else
+   {
+      for (int i = (TAILLE_PLATEAU / 2) - 1; i >= 0; i--)
+      {
+         sprintf(temp, "%0*d ", 2, plateau[i]);
+         strcat(message, temp);
+      }
+      strcat(message, "\n");
+      for (int i = TAILLE_PLATEAU / 2; i < TAILLE_PLATEAU; i++)
+      {
+         sprintf(temp, "%0*d ", 2, plateau[i]);
+         strcat(message, temp);
+      }
+      strcat(message, "\n");
+   }
+   return message;
+}
 
 int cote_adverse_vide(int plateau[], Client *client)
 {
@@ -646,9 +687,8 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
 
 char *serializeIntArray(char *buffer, int *array, int size, int numPlayer) // permet de sérialiser un tableau d'entiers
 {
-   strcat(buffer, "\0");
+   strcat(buffer, "~");
    char temp[12];
-   strcat(buffer, "P");
    sprintf(temp, "%d", numPlayer);
    strcat(buffer, temp);
    strcat(buffer, ",");
@@ -661,7 +701,7 @@ char *serializeIntArray(char *buffer, int *array, int size, int numPlayer) // pe
          strcat(buffer, ",");
       }
    }
-   strcat(buffer, "\0");
+   strcat(buffer, "~");
    return buffer;
 }
 
@@ -750,10 +790,9 @@ int initBoard(int plateau[TAILLE_PLATEAU]) // permet d'initialiser le plateau de
 
 int sendBoard(SOCKET sock, int plateau[TAILLE_PLATEAU], int numPlayer) // permet d'envoyer le plateau de jeu à un client
 {
-   char buffer[BUF_SIZE];
-   buffer[0] = 0;
-   serializeIntArray(buffer, plateau, TAILLE_PLATEAU, numPlayer);
-   write_client(sock, buffer);
+   char message[BUF_SIZE];
+   afficher_plateau(plateau, numPlayer, message);
+   write_client(sock, message);
    write_client(sock, "\n");
    return 0;
 }

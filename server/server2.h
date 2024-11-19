@@ -58,7 +58,7 @@ struct Partie
     Client spectateurs[MAX_CLIENTS];
 };
 
-static void afficher_plateau(int plateau[], Client *client1, Client *client2, int num_joueur_appelant);
+static char * afficher_plateau(int plateau[], int num_joueur_appelant, char * message);
 static int cote_adverse_vide(int plateau[], Client *client);
 static int coup_valide(int plateau[], Client *client, int case_joueur);
 static int coup_suivant(int plateau[], Client *client, int case_joueur);
