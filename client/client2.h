@@ -40,7 +40,7 @@ static int init_connection(const char *address);
 static void end_connection(int sock);
 static int read_server(SOCKET sock, char *buffer);
 static void write_server(SOCKET sock, const char *buffer);
-void afficher_plateau(int plateau[], int num_joueur_appelant)
+void afficher_plateau(int plateau[], int num_joueur_appelant);
 
 
 #endif /* guard */

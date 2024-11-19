@@ -646,15 +646,22 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
 
 char *serializeIntArray(char *buffer, int *array, int size, int numPlayer) // permet de sérialiser un tableau d'entiers
 {
-   buffer += sprintf(buffer, "%d", numPlayer);
+   strcat(buffer, "\0");
+   char temp[12];
+   strcat(buffer, "P");
+   sprintf(temp, "%d", numPlayer);
+   strcat(buffer, temp);
+   strcat(buffer, ",");
    for (int i = 0; i < size; i++)
    {
+      sprintf(temp, "%d", array[i]);
+      strcat(buffer, temp);
       if (i < size - 1)
       {
-         buffer += sprintf(buffer, ",");
+         strcat(buffer, ",");
       }
-      buffer += sprintf(buffer, "%d", array[i]);
    }
+   strcat(buffer, "\0");
    return buffer;
 }
 
@@ -744,7 +751,7 @@ int initBoard(int plateau[TAILLE_PLATEAU]) // permet d'initialiser le plateau de
 int sendBoard(SOCKET sock, int plateau[TAILLE_PLATEAU], int numPlayer) // permet d'envoyer le plateau de jeu à un client
 {
    char buffer[BUF_SIZE];
-   buffer[0] = 'P';
+   buffer[0] = 0;
    serializeIntArray(buffer, plateau, TAILLE_PLATEAU, numPlayer);
    write_client(sock, buffer);
    write_client(sock, "\n");

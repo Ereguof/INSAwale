@@ -56,33 +56,17 @@ void afficher_plateau(int plateau[], int num_joueur_appelant)
    }
 }
 
-
-
-int deserializeIntArray(char* buffer, int* array, int size)
+int *recevoirPlateau(char *buffer, int *plateau)
 {
    char d[] = ",";
    char *p = strtok(buffer, d);
    p = strtok(NULL, d);
-   for (int i = 0; i < size; i++)
+   printf("p : %s\n", p);
+   for (int i = 0; i < TAILLE_PLATEAU; i++)
    {
-      array[i] = atoi(p);
+      plateau[i] = atoi(p);
       p = strtok(NULL, d);
    }
-   return 0;
-}
-
-int * recevoirPlateau(SOCKET sock, int * plateau)
-{
-   char buffer[BUF_SIZE];
-   int n = 0;
-   if((n = recv(sock, buffer, BUF_SIZE - 1, 0)) < 0)
-   {
-      perror("recv()");
-      exit(errno);
-   }
-   buffer[n] = 0;
-
-   deserializeIntArray(buffer, plateau, TAILLE_PLATEAU);
    return plateau;
 }
 
@@ -96,7 +80,7 @@ static void app(const char *address, const char *name)
    /* send our name */
    write_server(sock, name);
 
-   while(1)
+   while (1)
    {
       FD_ZERO(&rdfs);
 
@@ -106,20 +90,20 @@ static void app(const char *address, const char *name)
       /* add the socket */
       FD_SET(sock, &rdfs);
 
-      if(select(sock + 1, &rdfs, NULL, NULL, NULL) == -1)
+      if (select(sock + 1, &rdfs, NULL, NULL, NULL) == -1)
       {
          perror("select()");
          exit(errno);
       }
 
       /* something from standard input : i.e keyboard */
-      if(FD_ISSET(STDIN_FILENO, &rdfs))
+      if (FD_ISSET(STDIN_FILENO, &rdfs))
       {
          fgets(buffer, BUF_SIZE - 1, stdin);
          {
             char *p = NULL;
             p = strstr(buffer, "\n");
-            if(p != NULL)
+            if (p != NULL)
             {
                *p = 0;
             }
@@ -131,11 +115,14 @@ static void app(const char *address, const char *name)
          }
          write_server(sock, buffer);
       }
-      else if(FD_ISSET(sock, &rdfs))
+      else if (FD_ISSET(sock, &rdfs))
       {
          int n = read_server(sock, buffer);
+         printf("=============================================\n");
+         printf("buffer : %s\n", buffer);
+         printf("=============================================\n");
          /* server down */
-         if(n == 0)
+         if (n == 0)
          {
             printf("Server disconnected !\n");
             break;
@@ -143,8 +130,8 @@ static void app(const char *address, const char *name)
          if (buffer[0] == 'P')
          {
             int plateau[TAILLE_PLATEAU];
-            
-            afficher_plateau(recevoirPlateau(sock, plateau), buffer[1]);
+            printf("Plateau reçu\n");
+            afficher_plateau(recevoirPlateau(buffer, plateau), buffer[1]);
          }
          else
          {
@@ -159,10 +146,10 @@ static void app(const char *address, const char *name)
 static int init_connection(const char *address)
 {
    SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
-   SOCKADDR_IN sin = { 0 };
+   SOCKADDR_IN sin = {0};
    struct hostent *hostinfo;
 
-   if(sock == INVALID_SOCKET)
+   if (sock == INVALID_SOCKET)
    {
       perror("socket()");
       exit(errno);
@@ -171,15 +158,15 @@ static int init_connection(const char *address)
    hostinfo = gethostbyname(address);
    if (hostinfo == NULL)
    {
-      fprintf (stderr, "Unknown host %s.\n", address);
+      fprintf(stderr, "Unknown host %s.\n", address);
       exit(EXIT_FAILURE);
    }
 
-   sin.sin_addr = *(IN_ADDR *) hostinfo->h_addr;
+   sin.sin_addr = *(IN_ADDR *)hostinfo->h_addr;
    sin.sin_port = htons(PORT);
    sin.sin_family = AF_INET;
 
-   if(connect(sock,(SOCKADDR *) &sin, sizeof(SOCKADDR)) == SOCKET_ERROR)
+   if (connect(sock, (SOCKADDR *)&sin, sizeof(SOCKADDR)) == SOCKET_ERROR)
    {
       perror("connect()");
       exit(errno);
@@ -197,7 +184,7 @@ static int read_server(SOCKET sock, char *buffer)
 {
    int n = 0;
 
-   if((n = recv(sock, buffer, BUF_SIZE - 1, 0)) < 0)
+   if ((n = recv(sock, buffer, BUF_SIZE - 1, 0)) < 0)
    {
       perror("recv()");
       exit(errno);
@@ -210,7 +197,7 @@ static int read_server(SOCKET sock, char *buffer)
 
 static void write_server(SOCKET sock, const char *buffer)
 {
-   if(send(sock, buffer, strlen(buffer), 0) < 0)
+   if (send(sock, buffer, strlen(buffer), 0) < 0)
    {
       perror("send()");
       exit(errno);
@@ -219,7 +206,7 @@ static void write_server(SOCKET sock, const char *buffer)
 
 int main(int argc, char **argv)
 {
-   if(argc < 2)
+   if (argc < 2)
    {
       printf("Usage : %s [address] [pseudo]\n", argv[0]);
       return EXIT_FAILURE;
