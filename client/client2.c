@@ -25,6 +25,42 @@ static void end(void)
 #endif
 }
 
+/*void afficher_plateau(int plateau[], Client *client1, Client *client2, int num_joueur_appelant)
+{
+   printf("Plateau : pour j%d \n", num_joueur_appelant);
+
+   if (num_joueur_appelant == 1)
+   {
+      for (int i = TAILLE_PLATEAU - 1; i > TAILLE_PLATEAU / 2 - 1; i--)
+      {
+         printf("%0*d ", 2, plateau[i]);
+      }
+      printf("\n");
+      for (int i = 0; i < TAILLE_PLATEAU / 2; i++)
+      {
+         printf("%0*d ", 2, plateau[i]);
+      }
+   }
+   else
+   {
+      for (int i = (TAILLE_PLATEAU / 2) - 1; i >= 0; i--)
+      {
+         printf("%0*d ", 2, plateau[i]);
+      }
+      printf("\n");
+      for (int i = TAILLE_PLATEAU / 2; i < TAILLE_PLATEAU; i++)
+      {
+         printf("%0*d ", 2, plateau[i]);
+      }
+      printf("\n");
+   }
+   printf("\n");
+   printf("joueur 1 : %d\n", client1->nbGraines);
+   printf("joueur 2 : %d\n", client2->nbGraines);
+   printf("\n");
+}
+*/
+
 
 int deserializeIntArray(char* buffer, int* array, int size)
 {

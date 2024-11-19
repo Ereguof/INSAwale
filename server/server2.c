@@ -27,41 +27,7 @@ static void end(void)
 }
 
 // FONCTION DE JEU
-
-void afficher_plateau(int plateau[], Client *client1, Client *client2, int num_joueur_appelant)
-{
-   printf("Plateau : pour j%d \n", num_joueur_appelant);
-
-   if (num_joueur_appelant == 1)
-   {
-      for (int i = TAILLE_PLATEAU - 1; i > TAILLE_PLATEAU / 2 - 1; i--)
-      {
-         printf("%0*d ", 2, plateau[i]);
-      }
-      printf("\n");
-      for (int i = 0; i < TAILLE_PLATEAU / 2; i++)
-      {
-         printf("%0*d ", 2, plateau[i]);
-      }
-   }
-   else
-   {
-      for (int i = (TAILLE_PLATEAU / 2) - 1; i >= 0; i--)
-      {
-         printf("%0*d ", 2, plateau[i]);
-      }
-      printf("\n");
-      for (int i = TAILLE_PLATEAU / 2; i < TAILLE_PLATEAU; i++)
-      {
-         printf("%0*d ", 2, plateau[i]);
-      }
-      printf("\n");
-   }
-   printf("\n");
-   printf("joueur 1 : %d\n", client1->nbGraines);
-   printf("joueur 2 : %d\n", client2->nbGraines);
-   printf("\n");
-}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 int cote_adverse_vide(int plateau[], Client *client)
 {
@@ -185,7 +151,6 @@ int coup_suivant(int plateau[], Client *client, int case_joueur)
          client->nbGraines = saveGraines;
       }
    }
-   client->numJoueur = (client->partie->tour + 1) % 2;
    return i;
 }
 
@@ -201,6 +166,8 @@ int fin_de_partie(Client *client1, Client *client2)
    }
    return 0;
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int actual, int *nbParties, Client *clientCurr, char *buffer) // permet de traiter les commandes des clients
 {
@@ -364,9 +331,9 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          client->partie->accepted = 1;
          client->partie->tour = random() % 2 + 1;
          initBoard(client->partie->plateau);
-         client->nbGraines = 0;
+         client->partie->client2->nbGraines = 0;
          client->partie->client1->nbGraines = 0;
-         client->numJoueur = 1;
+         client->partie->client1->numJoueur = 1;
          client->partie->client2->numJoueur = 2;
          write_client(client->sock, "Défi accepté\n");
          write_client(client->partie->client1->sock, "Défi accepté\n");
@@ -484,6 +451,9 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
 
    else if (strcmp(p, "/play") == 0) // permet de jouer un coup
    {
+      printf("tour : %d\n", client->partie->tour);
+      printf("numjoueur : %d\n", client->partie->client1->numJoueur);
+      printf("numjoueur : %d\n", client->partie->client2->numJoueur);
       if (client->partie == NULL)
       {
          write_client(client->sock, "Vous n'êtes pas en partie\n");
@@ -496,8 +466,6 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       }
       else if (client->partie->tour != client->numJoueur)
       {
-         printf("tour : %d\n", client->partie->tour);
-         printf("numJoueur : %d\n", client->numJoueur);
          write_client(client->sock, "Ce n'est pas votre tour\n");
          return 1;
       }
@@ -515,7 +483,43 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          }
          if (square > 0 && square < 7)
          {
-            printf("la case choisie est %d\n", square);
+            if (coup_valide(client->partie->plateau, client, square))
+            {
+               char message[BUF_SIZE];
+               strncat(buffer, "la case choisie est", square);
+               write_client(client->partie->client1->sock, message);
+               write_client(client->partie->client2->sock, message);
+
+               coup_suivant(client->partie->plateau, client, square);
+               sendBoard(client->partie->client1->sock, client->partie->plateau);
+               sendScore(client->partie->client1->sock, client->partie);
+               sendBoard(client->partie->client2->sock, client->partie->plateau);
+               sendScore(client->partie->client2->sock, client->partie);
+               if (client->partie->tour == 1)
+               {
+                  client->partie->tour = 2;
+               }
+               if (client->partie->tour == 2)
+               {
+                  client->partie->tour = 1;
+               }
+               int res = fin_de_partie(client->partie->client2, client->partie->client1);
+
+               if (res == 1)
+               {
+                  write_client(client->partie->client1->sock, "Vous avez GAGNÉ !");
+                  write_client(client->partie->client2->sock, "Vous avez PERDU !");
+               }
+               if (res == 2)
+               {
+                  write_client(client->partie->client2->sock, "Vous avez GAGNÉ !");
+                  write_client(client->partie->client1->sock, "Vous avez PERDU !");
+               }
+            }
+         }
+         else
+         {
+            write_client(client->sock, "WARNING : Enter a square between 1 and 6\n");
          }
       }
    }
