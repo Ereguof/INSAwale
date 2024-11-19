@@ -489,7 +489,8 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
             {
                char message[BUF_SIZE];
                message[0]=0;
-               strcat(message, "la case choisie est", square);
+               strcat(message, "la case choisie est");
+               strcat(message, square);
                write_client(client->partie->client1->sock, message);
                write_client(client->partie->client2->sock, message);
                coup_suivant(client->partie->plateau, client, square);
