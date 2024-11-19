@@ -205,8 +205,8 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       message[0] = 0;
       while (p != NULL)
       {
-         strncat(message, p, BUF_SIZE - strlen(message) - 1);
-         strncat(message, " ", BUF_SIZE - strlen(message) - 1);
+         strcat(message, p);
+         strcat(message, " ");
          p = strtok(NULL, d);
       }
       strncpy(client->bio, message, BUF_SIZE/2 - 1);
@@ -241,8 +241,8 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       for (int i = 0; i < actual; i++)
       {
          buffer[0] = 0;
-         strncat(buffer, clients[i].name, BUF_SIZE - 1);
-         strncat(buffer, "\n", BUF_SIZE - strlen(buffer) - 1);
+         strcat(buffer, clients[i].name);
+         strcat(buffer, "\n");
          write_client(client->sock, buffer);
       }
       return 1;
