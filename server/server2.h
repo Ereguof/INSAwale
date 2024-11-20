@@ -41,6 +41,7 @@ typedef struct in_addr IN_ADDR;
 // Forward declaration of Client struct
 typedef struct Client Client;
 
+//include client now to avoid circulary dependancies
 #include "client2.h"
 
 typedef struct sockaddr_in SOCKADDR_IN;
