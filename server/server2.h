@@ -59,6 +59,16 @@ struct Partie
     Client spectateurs[MAX_CLIENTS];
 };
 
+/**
+ * @brief Initializes the server.
+ */
+static void init(void);
+
+/**
+ * @brief Cleans up the server before exiting.
+ */
+static void end(void);
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 // FONCTIONS DE JEU
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -112,20 +122,145 @@ static int nextPlay(int plateau[], Client *client, int case_joueur);
  */
 static int endGame(Client *client1, Client *client2);
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+// COMMANDES DE JEU
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
- * @brief Initializes the server.
+ * @brief Processes a command from a client.
+ * 
+ * @param parties Array of active games.
+ * @param clients Array of clients.
+ * @param actual Number of currently connected clients.
+ * @param nbParties Pointer to the number of active games.
+ * @param client The client sending the command.
+ * @param buffer Command buffer.
+ * @return int Status code.
  */
-static void init(void);
+static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int actual, int *nbParties, Client *client, char *buffer);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FONCTIONS UTILITAIRES
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
- * @brief Cleans up the server before exiting.
+ * @brief Displays the game state.
+ * 
+ * @param partie Game data.
+ * @return int Status code.
  */
-static void end(void);
+static int showGame(Partie *partie);
+
+/**
+ * @brief Displays the list of active games.
+ * 
+ * @param parties Array of active games.
+ * @param nbParties Number of active games.
+ * @return int Status code.
+ */
+static int showGames(Partie *parties, int nbParties);
+
+///////////////////////////////::show client
+
+/**
+ * @brief Checks if a client is in a game.
+ * 
+ * @param client The client to check.
+ * @return int 1 if the client is in game, 0 otherwise.
+ */
+static int inGame(Client *client);
+
+/**
+ * @brief Checks if a client is spectating a game.
+ * 
+ * @param client The client to check.
+ * @param parties Array of active games.
+ * @param nbParties Number of active games.
+ * @return int 1 if the client is spectating, 0 otherwise.
+ */
+static int inSpectate(Client *client, Partie parties[MAX_PARTIES], int nbParties);
+
+/**
+ * @brief Initializes the game board.
+ * 
+ * @param plateau Game board array.
+ * @return int Status code.
+ */
+static int initBoard(int plateau[TAILLE_PLATEAU]);
+
+/**
+ * @brief Sends the game board to a client.
+ * 
+ * @param sock Client socket descriptor.
+ * @param plateau Game board array.
+ * @return int Status code.
+ */
+static int sendBoard(SOCKET sock, int plateau[TAILLE_PLATEAU], int numPlayer);
+
+/**
+ * @brief Sends the game score to a client.
+ * 
+ * @param sock Client socket descriptor.
+ * @param partie Game data.
+ * @return int Status code.
+ */
+static int sendScore(SOCKET sock, Partie *partie);
+
+/**
+ * @brief Removes a spectator from the list of spectators.
+ * 
+ * @param spectateurs Array of spectators.
+ * @param nbSpectateurs Pointer to the number of spectators.
+ * @param client The client to remove.
+ */
+static void remove_spectator(Client *spectateurs, int* nbSpectateurs, Client *client);
+
+/**
+ * @brief Removes a client from the list of clients.
+ * 
+ * @param clients Array of clients.
+ * @param to_remove Index of the client to remove.
+ * @param actual Pointer to the number of currently connected clients.
+ * @param nbParties Pointer to the number of active games.
+ * @param parties Array of active games.
+ */
+static void remove_client(Client *clients, int to_remove, int *actual, int *nbParties, Partie *parties);
+
+/**
+ * @brief Removes a game from the list of active games.
+ * 
+ * @param parties Array of active games.
+ * @param to_remove Index of the game to remove.
+ * @param nbParties Pointer to the number of active games.
+ */
+static void remove_game(Partie *parties, int to_remove, int *nbParties);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FONCTIONS DE RÉSEAU
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
  * @brief Main application loop.
  */
 static void app(void);
+
+/**
+ * @brief Clears the list of clients.
+ * 
+ * @param clients Array of clients.
+ * @param actual Number of currently connected clients.
+ */
+static void clear_clients(Client *clients, int actual);
+
+/**
+ * @brief Sends a message to all connected clients.
+ * 
+ * @param clients Array of clients.
+ * @param client The client sending the message.
+ * @param actual Number of currently connected clients.
+ * @param buffer Message to send.
+ * @param from_server Flag indicating if the message is from the server.
+ */
+static void send_message_to_all_clients(Client *clients, Client client, int actual, const char *buffer, char from_server);
 
 /**
  * @brief Initializes the server connection.
@@ -157,127 +292,5 @@ static int read_client(SOCKET sock, char *buffer);
  * @param buffer Buffer containing the data to write.
  */
 static void write_client(SOCKET sock, const char *buffer);
-
-/**
- * @brief Sends a message to all connected clients.
- * 
- * @param clients Array of clients.
- * @param client The client sending the message.
- * @param actual Number of currently connected clients.
- * @param buffer Message to send.
- * @param from_server Flag indicating if the message is from the server.
- */
-static void send_message_to_all_clients(Client *clients, Client client, int actual, const char *buffer, char from_server);
-
-/**
- * @brief Removes a spectator from the list of spectators.
- * 
- * @param spectateurs Array of spectators.
- * @param nbSpectateurs Pointer to the number of spectators.
- * @param client The client to remove.
- */
-static void remove_spectator(Client *spectateurs, int* nbSpectateurs, Client *client);
-
-/**
- * @brief Removes a client from the list of clients.
- * 
- * @param clients Array of clients.
- * @param to_remove Index of the client to remove.
- * @param actual Pointer to the number of currently connected clients.
- * @param nbParties Pointer to the number of active games.
- * @param parties Array of active games.
- */
-static void remove_client(Client *clients, int to_remove, int *actual, int *nbParties, Partie *parties);
-
-/**
- * @brief Removes a game from the list of active games.
- * 
- * @param parties Array of active games.
- * @param to_remove Index of the game to remove.
- * @param nbParties Pointer to the number of active games.
- */
-static void remove_game(Partie *parties, int to_remove, int *nbParties);
-
-/**
- * @brief Clears the list of clients.
- * 
- * @param clients Array of clients.
- * @param actual Number of currently connected clients.
- */
-static void clear_clients(Client *clients, int actual);
-
-/**
- * @brief Processes a command from a client.
- * 
- * @param parties Array of active games.
- * @param clients Array of clients.
- * @param actual Number of currently connected clients.
- * @param nbParties Pointer to the number of active games.
- * @param client The client sending the command.
- * @param buffer Command buffer.
- * @return int Status code.
- */
-static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int actual, int *nbParties, Client *client, char *buffer);
-
-/**
- * @brief Checks if a client is spectating a game.
- * 
- * @param client The client to check.
- * @param parties Array of active games.
- * @param nbParties Number of active games.
- * @return int 1 if the client is spectating, 0 otherwise.
- */
-static int inSpectate(Client *client, Partie parties[MAX_PARTIES], int nbParties);
-
-/**
- * @brief Checks if a client is in a game.
- * 
- * @param client The client to check.
- * @return int 1 if the client is in game, 0 otherwise.
- */
-static int inGame(Client *client);
-
-/**
- * @brief Initializes the game board.
- * 
- * @param plateau Game board array.
- * @return int Status code.
- */
-static int initBoard(int plateau[TAILLE_PLATEAU]);
-
-/**
- * @brief Sends the game board to a client.
- * 
- * @param sock Client socket descriptor.
- * @param plateau Game board array.
- * @return int Status code.
- */
-static int sendBoard(SOCKET sock, int plateau[TAILLE_PLATEAU], int numPlayer);
-
-/**
- * @brief Sends the game score to a client.
- * 
- * @param sock Client socket descriptor.
- * @param partie Game data.
- * @return int Status code.
- */
-static int sendScore(SOCKET sock, Partie *partie);
-
-/**
- * @brief Displays the game state.
- * 
- * @param partie Game data.
- * @return int Status code.
- */
-static int showGame(Partie *partie);
-
-/**
- * @brief Displays the list of active games.
- * 
- * @param parties Array of active games.
- * @param nbParties Number of active games.
- * @return int Status code.
- */
-static int showGames(Partie *parties, int nbParties);
 
 #endif /* guard */
