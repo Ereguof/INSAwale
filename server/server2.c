@@ -571,8 +571,6 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       }
    }
 
-   // rajouter les commandes permettant de jouer
-
    else if (strcmp(p, "/out") == 0) // permet de quitter une partie, que ce soit en tant que joueur ou spectateur
    {
       if (client->partie != NULL)
