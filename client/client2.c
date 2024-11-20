@@ -131,7 +131,6 @@ static void end_connection(int sock)
 static int read_server(SOCKET sock, char *buffer)
 {
    int n = 0;
-
    if ((n = recv(sock, buffer, BUF_SIZE - 1, 0)) < 0)
    {
       perror("recv()");

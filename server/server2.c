@@ -53,6 +53,7 @@ char *showBoard(int plateau[], int num_joueur_appelant, char *message)
          sprintf(temp, "%0*d ", 2, plateau[i]);
          strcat(message, temp);
       }
+      strcat(message, "\n");
    }
    else
    {
