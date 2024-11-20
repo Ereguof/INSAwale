@@ -544,10 +544,12 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
 
                if (client->partie->tour == 1)
                {
+                  write_client(client->partie->client2->sock, "À vous de jouer !");
                   client->partie->tour = 2;
                }
                else if (client->partie->tour == 2)
                {
+                  write_client(client->partie->client1->sock, "À vous de jouer !");
                   client->partie->tour = 1;
                }
                int res = endGame(client->partie->client2, client->partie->client1);
