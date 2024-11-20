@@ -453,7 +453,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       p = strtok(NULL, d);
       if (p == NULL)
       {
-         write_client(client->sock, "WARNING : Veuillez entrer le nom du joueur à observer (Utilisation : /challenge [pseudo])\n");
+         write_client(client->sock, "ATTENTION : Veuillez entrer le nom du joueur à observer (Utilisation : /challenge [pseudo])\n");
          return 1;
       }
       else if (strcmp(p, client->name) == 0)
@@ -519,7 +519,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          p = strtok(NULL, d);
          if (p == NULL)
          {
-            write_client(client->sock, "WARNING : Enter a square between 1 and 6\n");
+            write_client(client->sock, "ATTENTION : Entrez un numéro de case valide\n");
          }
          else
          {
@@ -568,7 +568,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          }
          else
          {
-            write_client(client->sock, "WARNING : Enter a square between 1 and 6\n");
+            write_client(client->sock, "ATTENTION : Entrez un numéro de case valide\n");
          }
       }
    }
