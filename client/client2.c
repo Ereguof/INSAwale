@@ -1,8 +1,10 @@
+//standard library
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
 
+//file of the project
 #include "client2.h"
 
 static void init(void)
@@ -70,6 +72,7 @@ static void app(const char *address, const char *name)
          }
          write_server(sock, buffer);
       }
+
       else if (FD_ISSET(sock, &rdfs))
       {
          int n = read_server(sock, buffer);
