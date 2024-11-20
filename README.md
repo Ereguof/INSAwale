@@ -2,7 +2,7 @@
 
 L’objectif du TP est de réaliser un serveur de jeu Awalé. 
 
-Le but est d’avoir une application client/serveur qui permettent aux clients de jouer des parties, de vérifier que les règles sont biens appliquées, de communiquer, de garder des historiques (de score, de parties jouées etc.).
+Le but est d’avoir une application client/serveur permettant aux clients de jouer des parties, de vérifier que les règles sont bien appliquées, de communiquer, de garder des historiques (de score, de parties jouées, etc).
 
 ## Bienvenue sur le serveur de jeu INSAwalé !
 
@@ -45,4 +45,4 @@ Pour lancer un client : `./client2 [IP_SERVER] [PSEUDO]`
 
 CTRL-C : quitte le serveur
 
-Les règles du jeu peuvent être vues [ici](https://fr.wikipedia.org/wiki/Awal%C3%A9)
+### Les règles du jeu peuvent être vues [ici](https://fr.wikipedia.org/wiki/Awal%C3%A9)
