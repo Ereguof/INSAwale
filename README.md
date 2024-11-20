@@ -17,6 +17,12 @@ Pour lancer un client : `./client2 [IP_SERVER] [PSEUDO]`
 
 ### Voici la liste des commandes et fonctionnalités disponibles :
 
+/help : Permet d'afficher les commandes disponibles
+
+/setbio [biographie] : Permet de définir une biographie
+
+/bio [pseudo] : Permet d'afficher la biographie d'un joueur
+
 /list : affiche la liste des participants connectés
 
 /games : affiche la liste des parties en cours
