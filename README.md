@@ -37,4 +37,4 @@ Pour lancer un client : `./client2 [IP_SERVER] [PSEUDO]`
 
 CTRL-C : quitte le serveur
 
-Les règles peuvent être vues {ici}(https://fr.wikipedia.org/wiki/Awal%C3%A9)
+Les règles peuvent être vues [ici](https://fr.wikipedia.org/wiki/Awal%C3%A9)
