@@ -427,7 +427,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          {
             if (parties[i].client1 == client || parties[i].client2 == client)
             {
-               remove_game(parties, i, nbParties);
+               remove_game(parties, i, nbParties, clients, &actual);
                i--;
             }
          }
@@ -598,7 +598,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          {
             if (parties[i].client1 == client || parties[i].client2 == client)
             {
-               remove_game(parties, i, nbParties);
+               remove_game(parties, i, nbParties, clients, &actual);
                i--;
             }
          }
@@ -840,7 +840,7 @@ static void remove_client(Client *clients, int to_remove, int *actual, int *nbPa
    {
       if (parties[i].client1 == &clients[to_remove] || parties[i].client2 == &clients[to_remove])
       {
-         remove_game(parties, i, nbParties);
+         remove_game(parties, i, nbParties, clients, actual);
          i--;
       }
       else
@@ -869,10 +869,17 @@ static void remove_client(Client *clients, int to_remove, int *actual, int *nbPa
    (*actual)--;
 }
 
-static void remove_game(Partie *parties, int to_remove, int *nbParties) // permet de retirer une partie de la liste des parties
+static void remove_game(Partie *parties, int to_remove, int *nbParties, Client * clients, int *actual) // permet de retirer une partie de la liste des parties
 {
    parties[to_remove].client1->partie = NULL;
    parties[to_remove].client2->partie = NULL;
+   for (int i = 0; i < *actual; i++)
+   {
+      if (clients[i].partie > &parties[to_remove])
+      {
+         clients[i].partie--;
+      }
+   }
    memmove(parties + to_remove, parties + to_remove + 1, (*nbParties - to_remove - 1) * sizeof(Partie));
    (*nbParties)--;
 }

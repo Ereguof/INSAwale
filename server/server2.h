@@ -238,7 +238,7 @@ static void remove_client(Client *clients, int to_remove, int *actual, int *nbPa
  * @param to_remove Index of the game to remove.
  * @param nbParties Pointer to the number of active games.
  */
-static void remove_game(Partie *parties, int to_remove, int *nbParties);
+static void remove_game(Partie *parties, int to_remove, int *nbParties, Client * clients, int *actual);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 // FONCTIONS DE RÉSEAU

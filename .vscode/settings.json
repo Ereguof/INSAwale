@@ -1,5 +1,6 @@
 {
     "files.associations": {
         "stdlib.h": "c"
-    }
+    },
+    "makefile.configureOnOpen": true
 }
