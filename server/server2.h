@@ -36,7 +36,7 @@ typedef struct in_addr IN_ADDR;
 
 #define TAILLE_PLATEAU 12
 #define NB_GRAINES 48
-#define NB_GRAINES_WIN 25
+#define NB_GRAINES_WIN 40
 
 // Forward declaration of Client struct
 typedef struct Client Client;
