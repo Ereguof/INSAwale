@@ -354,8 +354,11 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
                partie->nbSpectateurs = 0;
                partie->accepted = 0;
                (*nbParties)++;
-               write_client(clients[i].sock, client->name);
-               write_client(clients[i].sock, " vous a défié : Acceptez-vous ? (Type '/accept' or '/deny')\n");
+               char message[BUF_SIZE];
+               message[0] = 0;
+               strcat(message, client->name);
+               strcat(message, " vous a défié : Acceptez-vous ? (Type '/accept' or '/deny')\n");
+               write_client(clients[i].sock, message);
                write_client(client->sock, "Défi envoyé\n");
                return 1;
             }
@@ -394,10 +397,8 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
             write_client(client->sock, "Vous commencez\n");
             write_client(client->partie->client1->sock, "Votre adversaire commence\n");
          }
-         sendBoard(client->partie->client1->sock, client->partie->plateau, client->partie->client1->numJoueur);
-         sendScore(client->partie->client1->sock, client->partie);
-         sendBoard(client->sock, client->partie->plateau, client->partie->client2->numJoueur);
-         sendScore(client->sock, client->partie);
+         sendGame(client->partie->client1->sock, client->partie, 1);
+         sendGame(client->sock, client->partie, 2);
          return 1;
       }
       else if (client->partie != NULL && client->partie->accepted == 1)
@@ -478,8 +479,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
                strncat(message, clients[i].name, BUF_SIZE - strlen(message) - 1);
                strncat(message, "\n", BUF_SIZE - strlen(message) - 1);
                write_client(client->sock, message);
-               sendBoard(client->sock, clients[i].partie->plateau, 1);
-               sendScore(client->sock, clients[i].partie);
+               sendGame(client->sock, clients[i].partie, 1);
                clients[i].partie->spectateurs[clients[i].partie->nbSpectateurs] = *client;
                clients[i].partie->nbSpectateurs++;
                return 1;
@@ -537,14 +537,11 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
                write_client(client->partie->client1->sock, message);
                write_client(client->partie->client2->sock, message);
                nextPlay(client->partie->plateau, client, square);
-               sendBoard(client->partie->client1->sock, client->partie->plateau, client->partie->client1->numJoueur);
-               sendScore(client->partie->client1->sock, client->partie);
-               sendBoard(client->partie->client2->sock, client->partie->plateau, client->partie->client2->numJoueur);
-               sendScore(client->partie->client2->sock, client->partie);
+               sendGame(client->partie->client1->sock, client->partie, 1);
+               sendGame(client->partie->client2->sock, client->partie, 2);
                for (int i = 0; i < client->partie->nbSpectateurs; i++)
                {
-                  sendBoard(client->partie->spectateurs[i].sock,client->partie->plateau, 1);
-                  sendScore(client->partie->spectateurs[i].sock, client->partie);
+                  sendGame(client->partie->spectateurs[i].sock, client->partie, 1);
                }
 
                int res = endGame(client->partie->client2, client->partie->client1);
@@ -570,7 +567,6 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
                   write_client(client->partie->client1->sock, "À vous de jouer !\n");
                   client->partie->tour = 1;
                }
-               
             }
          }
          else
@@ -781,21 +777,15 @@ int initBoard(int plateau[TAILLE_PLATEAU]) // permet d'initialiser le plateau de
    return 0;
 }
 
-int sendBoard(SOCKET sock, int plateau[TAILLE_PLATEAU], int numPlayer) // permet d'envoyer le plateau de jeu à un client
+int sendGame(SOCKET sock, Partie *partie, int numPlayer) // permet d'envoyer l'état d'une partie à un client
 {
-   char message[BUF_SIZE];
-   showBoard(plateau, numPlayer, message);
-   write_client(sock, message);
-   write_client(sock, "\n");
-   return 0;
-}
-
-int sendScore(SOCKET sock, Partie *partie) // permet d'envoyer le score d'une partie à un client
-{
-   char nbGraines[12];
-   sprintf(nbGraines, "%d", partie->client1->nbGraines);
    char message[BUF_SIZE];
    message[0] = 0;
+   showBoard(partie->plateau, numPlayer, message);
+   strcat(message, "\n");
+
+   char nbGraines[12];
+   sprintf(nbGraines, "%d", partie->client1->nbGraines);
    strcat(message, partie->client1->name);
    strcat(message, " : ");
    strcat(message, nbGraines);
@@ -869,7 +859,7 @@ static void remove_client(Client *clients, int to_remove, int *actual, int *nbPa
    (*actual)--;
 }
 
-static void remove_game(Partie *parties, int to_remove, int *nbParties, Client * clients, int *actual) // permet de retirer une partie de la liste des parties
+static void remove_game(Partie *parties, int to_remove, int *nbParties, Client *clients, int *actual) // permet de retirer une partie de la liste des parties
 {
    parties[to_remove].client1->partie = NULL;
    parties[to_remove].client2->partie = NULL;
@@ -967,7 +957,15 @@ static void app(void) // permet de gérer les connexions des clients
          }
          else
          {
-            write_client(csock, "Bienvenue sur le serveur de jeu INSAwalé !\nVoici la liste des commandes disponibles :\n/help : Permet d'afficher les commandes disponibles\n/setbio [biographie] : Permet de définir une biographie\n/bio [pseudo] : Permet d'afficher la biographie d'un joueur\n/list : affiche la liste des participants connectés\n/games : affiche la liste des parties en cours\n/challenge [pseudo] : défie un joueur\n/accept : accepte un défi\n/deny : refuse un défi\n/spectate [pseudo] : observe une partie\n/play [case] : joue un coup\n/out : quitte une partie ou le mode spectateur\n/all [message] : envoie un message à tous les participants\n/mp [pseudo] [message] : envoie un message privé à un participant\nCTRL-C : quitte le serveur\n");
+            char logo[BUF_SIZE];
+            logo[0] = 0;
+            strcat(logo, "   _____  _________ _      _____   __   ____\n");
+            strcat(logo, "  /  _/ |/ / __/ _ | | /| / / _ | / /  / __/\n");
+            strcat(logo, " _/ //    /\\ \\/ __ | |/ |/ / __ |/ /__/ _/  \n");
+            strcat(logo, "/___/_/|_/___/_/ |_|__/|__/_/ |_/____/___/  \n");
+            strcat(logo, "                                            \n\n");
+            strcat(logo, "Bienvenue sur le serveur de jeu INSAwalé !\n\nVoici la liste des commandes disponibles :\n/help : Permet d'afficher les commandes disponibles\n/setbio [biographie] : Permet de définir une biographie\n/bio [pseudo] : Permet d'afficher la biographie d'un joueur\n/list : affiche la liste des participants connectés\n/games : affiche la liste des parties en cours\n/challenge [pseudo] : défie un joueur\n/accept : accepte un défi\n/deny : refuse un défi\n/spectate [pseudo] : observe une partie\n/play [case] : joue un coup\n/out : quitte une partie ou le mode spectateur\n/all [message] : envoie un message à tous les participants\n/mp [pseudo] [message] : envoie un message privé à un participant\nCTRL-C : quitte le serveur\n");
+            write_client(csock, logo);
          }
 
          /* what is the new maximum fd ? */

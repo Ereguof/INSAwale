@@ -194,22 +194,14 @@ static int inSpectate(Client *client, Partie parties[MAX_PARTIES], int nbParties
 static int initBoard(int plateau[TAILLE_PLATEAU]);
 
 /**
- * @brief Sends the game board to a client.
- * 
- * @param sock Client socket descriptor.
- * @param plateau Game board array.
- * @return int Status code.
- */
-static int sendBoard(SOCKET sock, int plateau[TAILLE_PLATEAU], int numPlayer);
-
-/**
- * @brief Sends the game score to a client.
+ * @brief Sends the game state to a client.
  * 
  * @param sock Client socket descriptor.
  * @param partie Game data.
+ * @param numPlayer The player number.
  * @return int Status code.
  */
-static int sendScore(SOCKET sock, Partie *partie);
+static int sendGame(SOCKET sock, Partie *partie, int numPlayer);
 
 /**
  * @brief Removes a spectator from the list of spectators.
