@@ -110,13 +110,13 @@ int validPlay(int plateau[], Client *client, int case_joueur)
       {
          if (TAILLE_PLATEAU / 2 - case_joueur + 1 > plateau[case_joueur - 1])
          {
-            printf("Case invalide : famine\n");
+            write_client(client, "Case invalide : famine\n");
             return 0;
          }
       }
       if (plateau[case_joueur - 1] == 0)
       {
-         printf("Case vide\n");
+         write_client(client, "Case vide\n");
          return 0;
       }
    }
@@ -126,13 +126,13 @@ int validPlay(int plateau[], Client *client, int case_joueur)
       {
          if (TAILLE_PLATEAU / 2 - case_joueur + 1 > plateau[case_joueur - 1 + TAILLE_PLATEAU / 2])
          {
-            printf("Case invalide : famine\n");
+            write_client(client, "Case invalide : famine\n");
             return 0;
          }
       }
       if (plateau[case_joueur + 5] == 0)
       {
-         printf("Case vide\n");
+         write_client(client, "Case vide\n");
          return 0;
       }
    }
@@ -376,7 +376,6 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       {
          client->partie->accepted = 1;
          client->partie->tour = random() % 2 + 1;
-         printf("tour : %d\n", client->partie->tour);
          initBoard(client->partie->plateau);
          client->partie->client2->nbGraines = 0;
          client->partie->client1->nbGraines = 0;
@@ -638,7 +637,6 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          p = strtok(NULL, d);
       }
       send_message_to_all_clients(clients, *client, actual, message, 0);
-      printf("%s : %s\n", client->name, message);
       return 1;
    }
 
