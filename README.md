@@ -1,6 +1,8 @@
 # Projet de programmation réseau : INSAwalé
 
-L’objectif du TP est de réaliser un serveur de jeu Awalé. Le but est d’avoir une application client/serveur qui permettent aux clients de jouer des parties, de vérifier que les règles sont biens appliquées, de communiquer, de garder des historiques (de score, de parties jouées etc.).
+L’objectif du TP est de réaliser un serveur de jeu Awalé. 
+
+Le but est d’avoir une application client/serveur qui permettent aux clients de jouer des parties, de vérifier que les règles sont biens appliquées, de communiquer, de garder des historiques (de score, de parties jouées etc.).
 
 ## Bienvenue sur le serveur de jeu INSAwalé !
 
