@@ -25,20 +25,6 @@ static void end(void)
 #endif
 }
 
-int *recevoirPlateau(char *buffer, int *plateau)
-{
-   char d[] = ",";
-   char *p = strtok(buffer, d);
-   p = strtok(NULL, d);
-   p = strtok(NULL, d);
-   for (int i = 0; i < TAILLE_PLATEAU; i++)
-   {
-      plateau[i] = atoi(p);
-      p = strtok(NULL, d);
-   }
-   return plateau;
-}
-
 static void app(const char *address, const char *name)
 {
    SOCKET sock = init_connection(address);
@@ -87,10 +73,6 @@ static void app(const char *address, const char *name)
       else if (FD_ISSET(sock, &rdfs))
       {
          int n = read_server(sock, buffer);
-         // printf("=============================================\n");
-         // printf("p_total : %s\n", buffer);
-         // printf("=============================================\n");
-         /* server down */
          if (n == 0)
          {
             printf("Server disconnected !\n");
