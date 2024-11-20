@@ -6,8 +6,6 @@
 #include "server2.h"
 #include "client2.h"
 
-#define atoa(x) #x
-
 static void init(void)
 {
 #ifdef WIN32
@@ -28,9 +26,11 @@ static void end(void)
 #endif
 }
 
-// FONCTION DE JEU
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
-char *afficher_plateau(int plateau[], int num_joueur_appelant, char *message)
+// FONCTIONS DE JEU
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+char *showBoard(int plateau[], int num_joueur_appelant, char *message)
 {
    message[0] = 0;
 
@@ -72,7 +72,7 @@ char *afficher_plateau(int plateau[], int num_joueur_appelant, char *message)
    return message;
 }
 
-int cote_adverse_vide(int plateau[], Client *client)
+int emptyEnemy(int plateau[], Client *client)
 {
    if (client->numJoueur == 2)
    {
@@ -97,7 +97,7 @@ int cote_adverse_vide(int plateau[], Client *client)
    return 1;
 }
 
-int coup_valide(int plateau[], Client *client, int case_joueur)
+int validPlay(int plateau[], Client *client, int case_joueur)
 {
    if (case_joueur < 1 || case_joueur > TAILLE_PLATEAU / 2)
    {
@@ -106,7 +106,7 @@ int coup_valide(int plateau[], Client *client, int case_joueur)
    }
    if (client->numJoueur == 1)
    {
-      if (cote_adverse_vide(plateau, client))
+      if (emptyEnemy(plateau, client))
       {
          if (TAILLE_PLATEAU / 2 - case_joueur + 1 > plateau[case_joueur - 1])
          {
@@ -122,7 +122,7 @@ int coup_valide(int plateau[], Client *client, int case_joueur)
    }
    else if (client->numJoueur == 2)
    {
-      if (cote_adverse_vide(plateau, client))
+      if (emptyEnemy(plateau, client))
       {
          if (TAILLE_PLATEAU / 2 - case_joueur + 1 > plateau[case_joueur - 1 + TAILLE_PLATEAU / 2])
          {
@@ -139,7 +139,7 @@ int coup_valide(int plateau[], Client *client, int case_joueur)
    return 1;
 }
 
-int coup_suivant(int plateau[], Client *client, int case_joueur)
+int nextPlay(int plateau[], Client *client, int case_joueur)
 {
    case_joueur--;
    if (client->numJoueur == 2)
@@ -186,7 +186,7 @@ int coup_suivant(int plateau[], Client *client, int case_joueur)
       }
    }
 
-   if (cote_adverse_vide(plateau, client))
+   if (emptyEnemy(plateau, client))
    {
       for (int i = 0; i < TAILLE_PLATEAU; i++)
       {
@@ -197,7 +197,7 @@ int coup_suivant(int plateau[], Client *client, int case_joueur)
    return i;
 }
 
-int fin_de_partie(Client *client1, Client *client2)
+int endGame(Client *client1, Client *client2)
 {
    if (client1->nbGraines >= NB_GRAINES_WIN)
    {
@@ -210,6 +210,8 @@ int fin_de_partie(Client *client1, Client *client2)
    return 0;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+// COMMANDES DE JEU
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int actual, int *nbParties, Client *clientCurr, char *buffer) // permet de traiter les commandes des clients
@@ -233,6 +235,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       write_client(client->sock, "/play [case] : Permet de jouer un coup\n");
       write_client(client->sock, "/out : Permet de quitter une partie, que ce soit en tant que joueur ou spectateur\n");
       write_client(client->sock, "/all [message] : Permet d'envoyer un message à tous les participants\n");
+      write_client(client->sock, "/mp [player] [message] : Permet d'envoyer un message privé a un joueur\n");
       return 1;
    }
 
@@ -318,7 +321,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       return 1;
    }
 
-   else if (strcmp(p, "/ch") == 0) // permet de défier un joueur
+   else if (strcmp(p, "/challenge") == 0) // permet de défier un joueur
    {
       p = strtok(NULL, d);
       if (p == NULL)
@@ -367,7 +370,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       return 1;
    }
 
-   else if (strcmp(p, "/a") == 0) // permet d'accepter un défi
+   else if (strcmp(p, "/accept") == 0) // permet d'accepter un défi
    {
       if (client->partie != NULL && client->partie->accepted == 0 && inSpectate(client, parties, *nbParties) == 0 && client->partie->client2 == client)
       {
@@ -493,7 +496,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
       return 1;
    }
 
-   else if (strcmp(p, "/p") == 0) // permet de jouer un coup
+   else if (strcmp(p, "/play") == 0) // permet de jouer un coup
    {
       if (client->partie == NULL)
       {
@@ -524,7 +527,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
          }
          if (square > 0 && square < 7)
          {
-            if (coup_valide(client->partie->plateau, client, square))
+            if (validPlay(client->partie->plateau, client, square))
             {
                char message[BUF_SIZE];
                message[0] = 0;
@@ -533,7 +536,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
                strcat(message, "\n");
                write_client(client->partie->client1->sock, message);
                write_client(client->partie->client2->sock, message);
-               coup_suivant(client->partie->plateau, client, square);
+               nextPlay(client->partie->plateau, client, square);
                sendBoard(client->partie->client1->sock, client->partie->plateau, client->partie->client1->numJoueur);
                sendScore(client->partie->client1->sock, client->partie);
                sendBoard(client->partie->client2->sock, client->partie->plateau, client->partie->client2->numJoueur);
@@ -547,7 +550,7 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
                {
                   client->partie->tour = 1;
                }
-               int res = fin_de_partie(client->partie->client2, client->partie->client1);
+               int res = endGame(client->partie->client2, client->partie->client1);
 
                if (res == 1)
                {
@@ -685,25 +688,9 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
    return 0;
 }
 
-char *serializeIntArray(char *buffer, int *array, int size, int numPlayer) // permet de sérialiser un tableau d'entiers
-{
-   strcat(buffer, "~");
-   char temp[12];
-   sprintf(temp, "%d", numPlayer);
-   strcat(buffer, temp);
-   strcat(buffer, ",");
-   for (int i = 0; i < size; i++)
-   {
-      sprintf(temp, "%d", array[i]);
-      strcat(buffer, temp);
-      if (i < size - 1)
-      {
-         strcat(buffer, ",");
-      }
-   }
-   strcat(buffer, "~");
-   return buffer;
-}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FONCTIONS UTILITAIRES
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 int showGame(Partie *partie) // permet d'afficher l'état d'une partie
 {
@@ -791,7 +778,7 @@ int initBoard(int plateau[TAILLE_PLATEAU]) // permet d'initialiser le plateau de
 int sendBoard(SOCKET sock, int plateau[TAILLE_PLATEAU], int numPlayer) // permet d'envoyer le plateau de jeu à un client
 {
    char message[BUF_SIZE];
-   afficher_plateau(plateau, numPlayer, message);
+   showBoard(plateau, numPlayer, message);
    write_client(sock, message);
    write_client(sock, "\n");
    return 0;
@@ -883,6 +870,10 @@ static void remove_game(Partie *parties, int to_remove, int *nbParties) // perme
    memmove(parties + to_remove, parties + to_remove + 1, (*nbParties - to_remove - 1) * sizeof(Partie));
    (*nbParties)--;
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+// FONCTIONS DE RÉSEAU
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static void app(void) // permet de gérer les connexions des clients
 {

@@ -58,11 +58,53 @@ struct Partie
     Client spectateurs[MAX_CLIENTS];
 };
 
-static char * afficher_plateau(int plateau[], int num_joueur_appelant, char * message);
-static int cote_adverse_vide(int plateau[], Client *client);
-static int coup_valide(int plateau[], Client *client, int case_joueur);
-static int coup_suivant(int plateau[], Client *client, int case_joueur);
-static int fin_de_partie(Client *client1, Client *client2);
+/**
+ * @brief Displays the game board.
+ * 
+ * @param plateau The game board array.
+ * @param num_joueur_appelant The number of the calling player.
+ * @param message The message to be displayed.
+ * @return A pointer to the message string.
+ */
+ static char * showBoard(int plateau[], int num_joueur_appelant, char * message);
+
+/**
+ * @brief Checks if the enemy's side of the board is empty.
+ * 
+ * @param plateau The game board array.
+ * @param client The client structure containing player information.
+ * @return 1 if the enemy's side is empty, 0 otherwise.
+ */
+static int emptyEnemy(int plateau[], Client *client);
+ 
+/**
+ * @brief Validates a player's move.
+ * 
+ * @param plateau The game board array.
+ * @param client The client structure containing player information.
+ * @param case_joueur The case number chosen by the player.
+ * @return 1 if the move is valid, 0 otherwise.
+ */
+static int validPlay(int plateau[], Client *client, int case_joueur);
+ 
+/**
+ * @brief Executes the next move for a player.
+ * 
+ * @param plateau The game board array.
+ * @param client The client structure containing player information.
+ * @param case_joueur The case number chosen by the player.
+ * @return The result of the move execution.
+ */
+static int nextPlay(int plateau[], Client *client, int case_joueur);
+ 
+/**
+ * @brief Determines if the game has ended.
+ * 
+ * @param client1 The first client's structure containing player information.
+ * @param client2 The second client's structure containing player information.
+ * @return 1 if the game has ended, 0 otherwise.
+ */
+static int endGame(Client *client1, Client *client2);
 
 /**
  * @brief Initializes the server.
@@ -216,16 +258,6 @@ static int sendBoard(SOCKET sock, int plateau[TAILLE_PLATEAU], int numPlayer);
 static int sendScore(SOCKET sock, Partie *partie);
 
 /**
- * @brief Deserializes an integer array from a buffer.
- * 
- * @param buffer Buffer containing the serialized data.
- * @param array Array to store the deserialized data.
- * @param size Size of the array.
- * @return int Status code.
- */
-static int deserializeIntArray(char* buffer, int* array, int size);
-
-/**
  * @brief Displays the game state.
  * 
  * @param partie Game data.
@@ -241,6 +273,5 @@ static int showGame(Partie *partie);
  * @return int Status code.
  */
 static int showGames(Partie *parties, int nbParties);
-
 
 #endif /* guard */
