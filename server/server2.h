@@ -158,7 +158,14 @@ static int showGame(Partie *partie);
  */
 static int showGames(Partie *parties, int nbParties);
 
-///////////////////////////////::show client
+/**
+ * @brief Displays the list of clients.
+ * 
+ * @param clients An array of Client structures.
+ * @param actual The actual number of clients in the array.
+ * @return An integer indicating the success or failure of the operation.
+ */
+int showClients(Client *clients, int actual);
 
 /**
  * @brief Checks if a client is in a game.
