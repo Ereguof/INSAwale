@@ -110,13 +110,13 @@ int validPlay(int plateau[], Client *client, int case_joueur)
       {
          if (TAILLE_PLATEAU / 2 - case_joueur + 1 > plateau[case_joueur - 1])
          {
-            write_client(client, "Case invalide : famine\n");
+            write_client(client->sock, "Case invalide : famine\n");
             return 0;
          }
       }
       if (plateau[case_joueur - 1] == 0)
       {
-         write_client(client, "Case vide\n");
+         write_client(client->sock, "Case vide\n");
          return 0;
       }
    }
@@ -126,13 +126,13 @@ int validPlay(int plateau[], Client *client, int case_joueur)
       {
          if (TAILLE_PLATEAU / 2 - case_joueur + 1 > plateau[case_joueur - 1 + TAILLE_PLATEAU / 2])
          {
-            write_client(client, "Case invalide : famine\n");
+            write_client(client->sock, "Case invalide : famine\n");
             return 0;
          }
       }
       if (plateau[case_joueur + 5] == 0)
       {
-         write_client(client, "Case vide\n");
+         write_client(client->sock, "Case vide\n");
          return 0;
       }
    }
