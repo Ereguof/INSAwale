@@ -541,6 +541,11 @@ static int command(Partie parties[MAX_PARTIES], Client clients[MAX_CLIENTS], int
                sendScore(client->partie->client1->sock, client->partie);
                sendBoard(client->partie->client2->sock, client->partie->plateau, client->partie->client2->numJoueur);
                sendScore(client->partie->client2->sock, client->partie);
+               for (int i = 0; i < client->partie->nbSpectateurs; i++)
+               {
+                  sendBoard(client->partie->spectateurs[i].sock,client->partie->plateau, 1);
+                  sendScore(client->partie->spectateurs[i].sock, client->partie);
+               }
 
                if (client->partie->tour == 1)
                {
